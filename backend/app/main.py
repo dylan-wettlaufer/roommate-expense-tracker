@@ -6,6 +6,8 @@ from sqlalchemy.future import select
 from app.config.settings import settings
 from app.db.database import get_db_session, init_db
 from app.db.models import User, Group, GroupMember
+from app.routers import user
+
 
 
 @asynccontextmanager
@@ -40,6 +42,9 @@ app = FastAPI(
     description="A FastAPI application for managing roommate expenses and group memberships.",
     lifespan=lifespan,  # Register the lifespan event handler
 )
+
+# Include routers for user and group management
+app.include_router(user.router, prefix="/api/v1", tags=["users"])
 
 @app.get("/")
 def read_root():
