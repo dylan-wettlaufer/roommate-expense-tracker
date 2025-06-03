@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Virtual environment folder at root
+.venv/
+
+# VS Code settings and workspace files
+.vscode/
+
+# Python package installs
+pip-wheel-metadata/
+*.egg-info/
+dist/
+build/
+
+# Mac OS system files
+.DS_Store
+
+# Logs
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Pytest cache
+.pytest_cache/
+
+# Frontend build output (assuming React)
+frontend/build/
+frontend/node_modules/
+
+# Node modules
+node_modules/
+
+# Environment variable files (if you have any)
+.env
+.env.local
+.env.*.local
+
+# Misc
+*.swp
+*.swo
+
+# Ignore Google Colab files
+.ipynb_checkpoints/
+
+# Ignore coverage reports
+htmlcov/
+.coverage
+
+# Ignore Docker files if you have
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Ignore database files if you use SQLite locally
+*.sqlite3
