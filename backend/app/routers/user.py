@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db_session
 from app.db.models import User
-from app.schemas.user import UserCreate, UserUpdate, User
-from app.db.crud import create_user_in_db as create_user, get_user_by_username
+from app.schemas.user import UserCreate, UserUpdate, User, UserPasswordChange
+from app.db.crud import create_user_in_db as create_user, get_user_by_username, update_password
 from fastapi.security import OAuth2PasswordRequestForm
 from app.utils.auth import create_access_token, verify_password
 from app.utils.dependencies import get_current_user
@@ -55,6 +55,7 @@ async def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Async
     token = create_access_token(data={"sub": user.id}) # Create an access token for the user
     return {"access_token": token, "token_type": "bearer"}
 
+
 @router.get("/me", response_model=User)
 async def get_current_user(db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
     """
@@ -62,3 +63,24 @@ async def get_current_user(db: AsyncSession = Depends(get_db_session), current_u
     This endpoint returns the details of the currently authenticated user.
     """
     return current_user
+
+
+@router.post("/change-password", response_model=User, status_code=status.HTTP_200_OK)
+async def change_password(password_data: UserPasswordChange, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
+    """
+    Change the password for the current user.
+    This endpoint allows the authenticated user to change their password.
+    """
+    try:
+        updated_user = await update_password(db, current_user, password_data)
+        return updated_user
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while changing the password"
+        )

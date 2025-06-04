@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, conlist
+from pydantic import model_validator
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID, uuid4
@@ -28,3 +29,15 @@ class User(BaseModel):
 
     class Config:
         orm_mode = True
+
+class UserPasswordChange(BaseModel):
+    current_password: str = Field(..., description="The user's current password.")
+    new_password: str = Field(..., min_length=8, description="The new password.")
+    confirm_new_password: str = Field(..., description="Confirmation of the new password.")
+
+    # Pydantic validator to ensure new_password matches confirm_new_password
+    @model_validator(mode='after')
+    def passwords_match(self) -> 'UserPasswordChange':
+        if self.new_password != self.confirm_new_password:
+            raise ValueError("New password and confirmation do not match.")
+        return self
