@@ -17,7 +17,7 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     email: Optional[EmailStr] = None
-    password: Optional[str] = Field(None, min_length=8)
+
 
 # Internal full user model
 class User(BaseModel):
