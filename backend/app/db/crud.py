@@ -6,7 +6,7 @@ import uuid
 from typing import Optional
 from sqlalchemy import update
 from sqlalchemy.orm import selectinload
-from app.utils.authentication import hash_password
+from app.utils.auth import hash_password
 
 
 async def create_user_in_db(db: AsyncSession, user: UserCreate) -> User:
@@ -45,3 +45,37 @@ async def create_user_in_db(db: AsyncSession, user: UserCreate) -> User:
     await db.refresh(new_user)
     return new_user
 
+
+async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
+    """
+    Retrieve a user by their ID.
+    :param db: The database session to use for the operation.
+    :param user_id: The ID of the user to retrieve.
+    :return: The User object if found, otherwise None.
+    """
+    result = await db.execute(
+        select(User).where(User.username == username)
+    )
+    user = result.scalars().first() # Get the first matching user, if any
+
+    # If no user is found, scalars() will return None
+    if not user:
+        return None
+    
+    return user
+
+async def get_user_by_id(db: AsyncSession, user_id: str) -> Optional[User]:
+    """
+    Retrieve a user by their ID.
+    :param db: The database session to use for the operation.
+    :param user_id: The ID of the user to retrieve.
+    :return: The User object if found, otherwise None.
+    """
+    result = await db.execute(
+        select(User).where(User.id == user_id)
+    )
+    user = result.scalars().first()
+    # If no user is found, scalars() will return None
+    if not user:
+        return None
+    return user
