@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db_session
 from app.db.models import User
 from app.schemas.user import UserCreate, UserUpdate, User, UserPasswordChange
-from app.db.crud import create_user_in_db as create_user, get_user_by_username, update_password
+from app.crud.user import create_user_in_db as create_user, get_user_by_username, update_password
 from fastapi.security import OAuth2PasswordRequestForm
 from app.utils.auth import create_access_token, verify_password
 from app.utils.dependencies import get_current_user

@@ -61,3 +61,18 @@ docker-compose.override.yaml
 
 # Ignore database files if you use SQLite locally
 *.sqlite3
+
+
+# Alembic version history files (optional, only if you don't want to track them)
+alembic/versions/*.pyc
+alembic/versions/__pycache__/
+
+# Local SQLite files (if used)
+*.db
+
+# Python virtual environment
+.venv/
+
+# Bytecode and cache
+__pycache__/
+*.py[cod]
