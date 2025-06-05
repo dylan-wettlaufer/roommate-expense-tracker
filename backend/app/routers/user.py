@@ -52,7 +52,7 @@ async def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Async
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    token = create_access_token(data={"sub": user.id}) # Create an access token for the user
+    token = create_access_token(data={"sub": str(user.id)}) # Convert UUID to string for JWT payload
     return {"access_token": token, "token_type": "bearer"}
 
 

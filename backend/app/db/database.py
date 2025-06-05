@@ -6,7 +6,12 @@ from app.db.models import Base
 
 # Create an asynchronous SQLAlchemy engine
 engine = create_async_engine(
-    settings.DATABASE_URL
+    settings.DATABASE_URL,
+    # Add this to disable statement caching
+    connect_args={
+        "prepared_statement_cache_size": 0,
+        "statement_cache_size": 0,
+    }
 )
 
 # Create an asynchronous session factory

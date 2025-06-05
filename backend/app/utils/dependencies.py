@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 from app.utils.auth import decode_access_token
-from app.db.crud import get_user_by_id
+from app.crud.user import get_user_by_id
 from app.db.database import get_db_session
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/api/v1/login")

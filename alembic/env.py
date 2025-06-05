@@ -1,10 +1,10 @@
 from logging.config import fileConfig
+from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 from alembic import context
 import asyncio
 import sys
 import os
-from backend.app.config.settings import settings
 
 # Get the absolute path to the project root
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -13,23 +13,23 @@ sys.path.insert(0, os.path.join(project_root, 'backend'))
 
 from backend.app.db.models import Base  # Your models
 from backend.app.db.database import engine  # Your async SQLAlchemy engine
+from backend.app.config.settings import settings
 
 # Setup logging
 config = context.config
-fileConfig(config.config_file_name)
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
 
 
 def do_run_migrations(connection):
-
-    url = settings.DATABASE_URL
-
+    """Run migrations in 'online' mode."""
     context.configure(
-        connection=connection,
+        connection=connection,  # Use the actual connection, not URL
         target_metadata=target_metadata,
-        render_as_batch=True,  # For SQLite
         compare_type=True,
+        compare_server_default=True,
     )
 
     with context.begin_transaction():
@@ -37,11 +37,38 @@ def do_run_migrations(connection):
 
 
 async def run_async_migrations():
-    async with engine.begin() as conn:
-        await conn.run_sync(do_run_migrations)
+    """Run migrations in async mode."""
+    connectable = engine
 
-    await engine.dispose()
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+
+    await connectable.dispose()
+
+
+def run_migrations_offline():
+    """Run migrations in 'offline' mode."""
+    url = settings.DATABASE_URL
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+        compare_type=True,
+        compare_server_default=True,
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
 
 
 def run_migrations_online():
+    """Run migrations in 'online' mode."""
     asyncio.run(run_async_migrations())
+
+
+# Determine which mode to run in
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
