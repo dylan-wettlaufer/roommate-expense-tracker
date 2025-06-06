@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.crud.group import create_group_in_db, get_group_by_id
+from app.crud.group import create_group_in_db, get_group_by_id, update_group_in_db
 from app.schemas.group import GroupCreate, GroupUpdate, Group
 from app.utils.dependencies import get_current_user
 from app.db.models import User
@@ -26,6 +26,22 @@ async def create_group(group: GroupCreate, db: AsyncSession = Depends(get_db_ses
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+
+@router.put("/groups/update/{group_id}", response_model=Group)
+async def update_group(group_id: UUID, group: GroupUpdate, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
+    """
+    Update a group.
+    This endpoint allows the authenticated user to update a group.
+    """
+    try:
+        updated_group = await update_group_in_db(db, group_id, group) # Call the update_group_in_db function from crud.py
+        return updated_group
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
 
 @router.get("/groups/{group_id}", response_model=Group)
 
