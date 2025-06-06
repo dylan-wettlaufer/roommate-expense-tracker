@@ -66,5 +66,5 @@ class GroupMemberInvite(BaseModel):
     group_id: UUID = Field(...)
     user_id: UUID = Field(...)
 
-
-
+class InviteCode(BaseModel):
+    invite_code: str = Field(...)

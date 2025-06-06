@@ -1,6 +1,6 @@
 from app.db.database import get_db_session
 from app.db.models import Group
-from app.schemas.group import GroupCreate, GroupUpdate
+from app.schemas.group import GroupCreate, GroupUpdate, InviteCode
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from fastapi import HTTPException, Depends, Path
@@ -109,3 +109,66 @@ async def update_group_in_db(db: AsyncSession, group_id: UUID, group: GroupUpdat
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
+
+async def add_member_to_group_in_db(db: AsyncSession, group_id: UUID, invite_code: InviteCode, user: User) -> Optional[GroupMember]:
+    """
+    Add a member to a group in the database.
+    :param db: The database session to use for the operation.
+    :param group_id: The ID of the group to add the member to.
+    :param user: The User object to add to the group.
+    :return: The GroupMember object if added successfully, otherwise None.
+    """
+    try:
+        # Get the group by ID
+        result = await db.execute(
+            select(Group).filter(Group.id == group_id)
+        )
+
+        db_group = result.scalar_one_or_none()
+
+        if db_group is None:
+            raise ValueError(f"Group '{group_id}' not found.")
+
+        if db_group.invite_code != invite_code.invite_code:
+            raise ValueError(f"Invalid invite code '{invite_code.invite_code}'.")
+        
+        db_group_member = await db.execute( # check if the user is already in the group
+            select(GroupMember).filter(GroupMember.group_id == group_id, GroupMember.user_id == user.id)
+        )
+
+        db_group_member = db_group_member.scalar_one_or_none() # get the group member
+
+        if db_group_member is not None: # if the user is already in the group
+            raise ValueError(f"User '{user.id}' is already a member of group '{group_id}'.") # raise an error
+
+        db_group_member = GroupMember( # create new group member
+            group_id=group_id,
+            user_id=user.id,
+            is_admin=False,
+        )
+
+        db.add(db_group_member)
+        await db.commit()
+        await db.refresh(db_group_member)
+        return db_group_member
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+async def get_group_members_in_db(db: AsyncSession, group_id: UUID) -> list[GroupMember]:
+    """
+    Retrieve all members of a group.
+    This endpoint allows the authenticated user to retrieve all members of a group.
+    """
+    try:
+        group_members = await db.execute(
+            select(GroupMember).filter(GroupMember.group_id == group_id)
+        )
+        return group_members.scalars().all()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+    
