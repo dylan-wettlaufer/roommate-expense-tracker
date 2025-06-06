@@ -157,16 +157,31 @@ async def add_member_to_group_in_db(db: AsyncSession, group_id: UUID, invite_cod
     finally:
         db.close()
 
-async def get_group_members_in_db(db: AsyncSession, group_id: UUID) -> list[GroupMember]:
+async def get_group_members_in_db(db: AsyncSession, group_id: UUID, current_user: User) -> list[GroupMember]:
     """
     Retrieve all members of a group.
     This endpoint allows the authenticated user to retrieve all members of a group.
     """
     try:
+        # check if the user is a member of the group
+        is_member_check = await db.execute(
+            select(GroupMember).filter(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id == current_user.id
+            )
+        )
+
+        # if the user is not a member of the group, raise an error
+        if not is_member_check.scalar_one_or_none():
+            raise ValueError("User is not a member of this group and cannot view its members.")
+
+        # get all group members
         group_members = await db.execute(
             select(GroupMember).filter(GroupMember.group_id == group_id)
         )
-        return group_members.scalars().all()
+
+        return group_members.scalars().all() # return all group members
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:

@@ -7,7 +7,20 @@ from app.config.settings import settings
 from app.db.database import get_db_session, init_db
 from app.db.models import User, Group, GroupMember
 from app.routers import user, group
+from fastapi.middleware.cors import CORSMiddleware
 
+origins = [
+    "http://localhost:3000",  # Your React app
+    "http://127.0.0.1:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @asynccontextmanager

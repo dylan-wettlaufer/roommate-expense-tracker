@@ -76,3 +76,61 @@ alembic/versions/__pycache__/
 # Bytecode and cache
 __pycache__/
 *.py[cod]
+
+# React/Node.js additions
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# React build and cache
+frontend/build/
+frontend/.next/
+frontend/out/
+
+# Dependency directories
+frontend/node_modules/
+
+# Runtime data
+frontend/pids
+frontend/*.pid
+frontend/*.seed
+frontend/*.pid.lock
+
+# Coverage directory used by tools like istanbul
+frontend/coverage/
+frontend/.nyc_output
+
+# ESLint cache
+frontend/.eslintcache
+
+# Parcel-bundler cache
+frontend/.cache
+frontend/.parcel-cache
+
+# Vite cache (if using Vite)
+frontend/.vite
+
+# Storybook build outputs
+frontend/storybook-static
+
+# Temporary folders
+frontend/tmp/
+frontend/temp/
+
+# Editor directories and files
+frontend/.vscode/*
+!frontend/.vscode/extensions.json
+frontend/.idea
+frontend/*.suo
+frontend/*.ntvs*
+frontend/*.njsproj
+frontend/*.sln
+frontend/*.sw?
+
+# OS generated files
+frontend/Thumbs.db
+frontend/ehthumbs.db
+frontend/Desktop.ini
