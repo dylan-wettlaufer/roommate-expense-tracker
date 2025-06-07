@@ -83,7 +83,7 @@ async def get_group_members(group_id: UUID, db: AsyncSession = Depends(get_db_se
     This endpoint allows the authenticated user to retrieve all members of a group.
     """
     try:
-        group_members = await get_group_members_in_db(db, group_id) # Call the get_group_members_in_db function from crud.py
+        group_members = await get_group_members_in_db(db, group_id, current_user) # Call the get_group_members_in_db function from crud.py
         return group_members
     except ValueError as e:
         raise HTTPException(

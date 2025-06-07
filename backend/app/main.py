@@ -14,15 +14,6 @@ origins = [
     "http://127.0.0.1:3000",
 ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -54,6 +45,14 @@ app = FastAPI(
     version=settings.API_VERSION,
     description="A FastAPI application for managing roommate expenses and group memberships.",
     lifespan=lifespan,  # Register the lifespan event handler
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include routers for user and group management

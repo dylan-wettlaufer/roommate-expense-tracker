@@ -20,7 +20,6 @@ async def create_user_in_db(db: AsyncSession, user: UserCreate) -> User:
     # Check if the username or email already exists
     existing_user = await db.execute(
         select(User).where(
-            (User.username == user.username) |
             (User.email == user.email)
         )
     )
@@ -34,7 +33,7 @@ async def create_user_in_db(db: AsyncSession, user: UserCreate) -> User:
     # Create a new User instance with hashed password
     new_user = User(
         id=str(uuid.uuid4()),
-        username=user.username,
+        username=user.email,
         email=user.email,
         password=hash_password(user.password), 
     )

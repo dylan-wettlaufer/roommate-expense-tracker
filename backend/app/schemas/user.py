@@ -6,12 +6,19 @@ from uuid import UUID, uuid4
 
 # Base model for shared user fields
 class UserBase(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr = Field(...)
 
 # For creating a new user
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
+    confirmPassword: str = Field(..., min_length=8)
+
+    # Pydantic validator to ensure password matches confirm_password
+    @model_validator(mode='after')
+    def passwords_match(self) -> 'UserCreate':
+        if self.password != self.confirmPassword:
+            raise ValueError("Passwords do not match.")
+        return self
 
 # For updating existing user info
 class UserUpdate(BaseModel):
