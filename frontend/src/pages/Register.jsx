@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle, XCircle, AlertCircle, Users } from 'lucide-react';
 import axios from 'axios';
+import { register } from '../services/auth';
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -11,11 +12,15 @@ export default function RegisterForm() {
     confirmPassword: ''
   });
   
+  // Password visibility states
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Form validation states
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
+  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -32,6 +37,7 @@ export default function RegisterForm() {
     }
   };
 
+  // Handle input focus
   const handleBlur = (field) => {
     setTouched(prev => ({
       ...prev,
@@ -40,6 +46,7 @@ export default function RegisterForm() {
     validateField(field, formData[field]);
   };
 
+  // Validate individual field
   const validateField = (field, value) => {
     let error = '';
     
@@ -73,6 +80,7 @@ export default function RegisterForm() {
     }));
   };
 
+  // Get password strength
   const getPasswordStrength = (password) => {
     if (!password) return { score: 0, text: '', color: '' };
     
@@ -111,6 +119,7 @@ export default function RegisterForm() {
     };
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -124,18 +133,20 @@ export default function RegisterForm() {
     const hasErrors = Object.values(errors).some(error => error !== '');
     const isEmpty = Object.values(formData).some(value => !value.trim());
     
-    if (!hasErrors && !isEmpty) {
+    if (!hasErrors && !isEmpty) { // If form is valid
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/v1/register',{
+        const response = await register({
             first_name: formData.firstName,
             last_name: formData.lastName,
             email: formData.email,
             password: formData.password,
             confirmPassword: formData.confirmPassword
         });
+
         console.log('Registration successful:', response.data);
         alert('Registration successful! Welcome to SplitEase!');
-      } catch (error) {
+
+      } catch (error) { // If registration fails
         console.error('Registration failed:', error);
         if (axios.isAxiosError(error)) {
             if (error.response?.status === 400) {
