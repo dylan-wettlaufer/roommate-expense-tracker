@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Users, Mail, Lock, XCircle } from 'lucide-react';
-import useLogin from '../hooks/useLogin';
 import useForm from '../../../hooks/useForm';
 import useValidation from '../../../hooks/useValidation';
 import useToggle from '../../../hooks/useToggle';
+import useAuth from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
 
@@ -27,8 +28,9 @@ const Login = () => {
   });
 
   const { errors, touched, handleBlur, validateForm, setErrors } = useValidation();
-  const { handleLogin, isSubmitting, loginError } = useLogin(); // Use your custom login hook
+  const { login, isSubmitting, authError } = useAuth(); // Use the auth hook
   const [showPassword, toggleShowPassword] = useToggle(false); // Using useToggle
+  const navigate = useNavigate();
 
   const handleFieldBlur = (field) => {
     handleBlur(field, formData[field], formData, validationRules); // Pass formData
@@ -39,9 +41,10 @@ const Login = () => {
     const formIsValid = validateForm(formData, validationRules);
 
     if (formIsValid) {
-      const { success, error } = await handleLogin(formData.email, formData.password);
+      const { success, error } = await login(formData.email, formData.password);
       if (success) {
         resetForm();
+        navigate('/groups');
       } else {
         // Set the error message in the validation errors
         setErrors(prev => ({ ...prev, general: error }));
@@ -183,10 +186,8 @@ const Login = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               Don't have an account?{' '}
-              <Link to="/register">
-                <a href="#" className="text-blue-600 font-medium hover:underline">
-                  Create account
-                </a>
+              <Link to="/register" className='text-blue-600 font-medium hover:underline'>
+                Create account
               </Link>
             </p>
           </div>

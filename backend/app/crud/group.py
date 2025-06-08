@@ -179,10 +179,26 @@ async def get_group_members_in_db(db: AsyncSession, group_id: UUID, current_user
         group_members = await db.execute(
             select(GroupMember).filter(GroupMember.group_id == group_id)
         )
-    
+
         # return all group members
         return group_members.scalars().all()
     
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+    
+
+async def get_all_groups_in_db(db: AsyncSession, current_user: User) -> list[Group]:
+    """
+    Retrieve all groups.
+    This endpoint allows the authenticated user to retrieve all groups.
+    """
+    try:
+        result = await db.execute(  
+            select(Group).join(GroupMember).where(GroupMember.user_id == current_user.id)
+        )
+        return result.scalars().all()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:

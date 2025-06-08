@@ -10,9 +10,21 @@ export const login = async (email, password) => {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     });
-    const { access_token } = response.data;
-    localStorage.setItem('access_token', access_token);
-    return response.data;
+
+    const { access_token, token_type } = response.data;
+
+    if (access_token && token_type) {
+        localStorage.setItem('access_token', access_token);
+        console.log("LOGIN API: Successfully received and stored token. Response data:", response.data); // <--- ADD THIS
+        return {success: true, data: response.data};
+    }
+    
+    return {success: false, error: "Login failed. Please try again."};
+};
+
+export const logout = async () => {
+    localStorage.removeItem('access_token');
+    return {success: true};
 };
 
 export const register = async (first_name, last_name, email, password, confirmPassword) => {

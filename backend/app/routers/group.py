@@ -7,7 +7,7 @@ from fastapi import HTTPException, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db_session
 from uuid import UUID
-from app.crud.group import add_member_to_group_in_db
+from app.crud.group import add_member_to_group_in_db, get_all_groups_in_db
 from app.schemas.group import GroupMember
 
 router = APIRouter()
@@ -45,7 +45,7 @@ async def update_group(group_id: UUID, group: GroupUpdate, db: AsyncSession = De
         )
 
 
-@router.get("/groups/{group_id}", response_model=Group)
+@router.get("/groups/single/{group_id}", response_model=Group)
 async def get_group(group_id: UUID, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
     """
     Retrieve a group by its ID.
@@ -85,6 +85,21 @@ async def get_group_members(group_id: UUID, db: AsyncSession = Depends(get_db_se
     try:
         group_members = await get_group_members_in_db(db, group_id, current_user) # Call the get_group_members_in_db function from crud.py
         return group_members
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+@router.get("/groups/all", response_model=list[Group])
+async def get_all_groups(db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
+    """
+    Retrieve all groups.
+    This endpoint allows the authenticated user to retrieve all groups.
+    """
+    try:
+        groups = await get_all_groups_in_db(db, current_user) # Call the get_all_groups_in_db function from crud.py
+        return groups
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

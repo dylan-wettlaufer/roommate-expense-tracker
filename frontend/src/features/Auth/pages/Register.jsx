@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle, XCircle, AlertCircle, Users } from 'lucide-react';
 import useForm from '../../../hooks/useForm';
 import usePasswordStrength from '../../../hooks/usePasswordStrength';
@@ -329,9 +330,9 @@ export default function RegisterForm() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               Already have an account?{' '}
-              <a href="#" className="text-blue-600 font-medium hover:underline">
+              <Link to="/" className='text-blue-600 font-medium hover:underline'>
                 Sign in here
-              </a>
+              </Link>
             </p>
           </div>
         </div>
