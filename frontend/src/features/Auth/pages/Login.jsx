@@ -1,119 +1,54 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { Eye, EyeOff, Users, Mail, Lock, LogIn, XCircle } from 'lucide-react';
+import api from '../../../services/api';
+import { Eye, EyeOff, Users, Mail, Lock, XCircle } from 'lucide-react';
+import useLogin from '../hooks/useLogin';
+import useForm from '../../../hooks/useForm';
+import useValidation from '../../../hooks/useValidation';
+import useToggle from '../../../hooks/useToggle';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
+
+  const validationRules = {
+    email: (value) => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!value) return 'Email is required';
+      if (!emailRegex.test(value)) return 'Please enter a valid email address';
+      return '';
+    },
+    password: (value) => {
+      if (!value) return 'Password is required';
+      return '';
+    },
+  }
+
+  const { values: formData, handleChange, resetForm } = useForm({
     email: '',
-    password: ''
+    password: '',
   });
 
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const { errors, touched, handleBlur, validateForm, setErrors } = useValidation();
+  const { handleLogin, isSubmitting, loginError } = useLogin(); // Use your custom login hook
+  const [showPassword, toggleShowPassword] = useToggle(false); // Using useToggle
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
-
-  // Handle input focus
-  const handleBlur = (field) => {
-    setTouched(prev => ({
-      ...prev,
-      [field]: true
-    }));
-    validateField(field, formData[field]);
-  };
-
-  // Validate individual field
-  const validateField = (field, value) => {
-    let error = '';
-    
-    switch (field) {
-      case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!value) error = 'Email is required';
-        else if (!emailRegex.test(value)) error = 'Please enter a valid email address';
-        break;
-      case 'password':
-        if (!value) error = 'Password is required';
-        break;
-    }
-    
-    setErrors(prev => ({
-      ...prev,
-      [field]: error
-    }));
+  const handleFieldBlur = (field) => {
+    handleBlur(field, formData[field], formData, validationRules); // Pass formData
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate all fields
-    Object.keys(formData).forEach(field => {
-      validateField(field, formData[field]);
-      setTouched(prev => ({ ...prev, [field]: true }));
-    });
-    
-    // Check if form is valid
-    const hasErrors = Object.values(errors).some(error => error !== '');
-    const isEmpty = Object.values(formData).some(value => !value.trim());
-    
-    if (!hasErrors && !isEmpty) {
-      setIsSubmitting(true);
-      
-      try {
+    const formIsValid = validateForm(formData, validationRules);
 
-        const loginData = new FormData();
-        loginData.append('username', formData.email);
-        loginData.append('password', formData.password);
-
-        const response = await axios.post(`http://127.0.0.1:8000/api/v1/login`, loginData, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        });
-        
-        console.log('Login successful:', response.data);
-        alert('Login successful! Welcome back to SplitEase!');
-        
-        // Reset form
-        setFormData({
-          email: '',
-          password: ''
-        });
-      } catch (error) {
-        console.error('Login failed:', error);
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 401) {
-            setErrors({ password: 'Invalid email or password' });
-          } else if (error.response?.status === 404) {
-            setErrors({ email: 'No account found with this email' });
-          } else {
-            alert('Login failed. Please try again.');
-          }
-        } else {
-          alert('Login failed. Please try again.');
-        }
-      } finally {
-        setIsSubmitting(false);
+    if(formIsValid) {
+      const success = await handleLogin(formData.email, formData.password);
+      if (success) {
+        resetForm();
+      } else {
+        console.log("Login failed");
       }
     }
-  };
+  }
+
+  const [rememberMe, setRememberMe] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
@@ -129,12 +64,10 @@ const Login = () => {
 
         {/* Form */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <div className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6"> {/* Use a form tag */}
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -142,10 +75,10 @@ const Login = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  onBlur={() => handleBlur('email')}
+                  onBlur={() => handleFieldBlur('email')}
                   className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:outline-none transition-colors bg-gray-50 ${
-                    touched.email && errors.email 
-                      ? 'border-red-300 focus:ring-red-500' 
+                    touched.email && errors.email
+                      ? 'border-red-300 focus:ring-red-500'
                       : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500'
                   }`}
                   placeholder="john.doe@example.com"
@@ -161,9 +94,7 @@ const Login = () => {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -171,17 +102,17 @@ const Login = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  onBlur={() => handleBlur('password')}
+                  onBlur={() => handleFieldBlur('password')}
                   className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:ring-2 focus:outline-none transition-colors bg-gray-50 ${
-                    touched.password && errors.password 
-                      ? 'border-red-300 focus:ring-red-500' 
+                    touched.password && errors.password
+                      ? 'border-red-300 focus:ring-red-500'
                       : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500'
                   }`}
                   placeholder="Enter your password"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={toggleShowPassword}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -218,10 +149,17 @@ const Login = () => {
               </div>
             </div>
 
+            {/* General Login Error Display */}
+            {loginError && (
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <XCircle className="w-4 h-4 mr-1" />
+                {loginError}
+              </p>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              onClick={handleSubmit}
               disabled={isSubmitting}
               className={`w-full py-3 px-4 rounded-xl font-medium focus:ring-4 focus:ring-blue-200 transition-all duration-200 flex items-center justify-center ${
                 isSubmitting
@@ -238,7 +176,7 @@ const Login = () => {
                 'Sign In'
               )}
             </button>
-          </div>
+          </form>
 
           {/* Footer */}
           <div className="mt-6 text-center">
