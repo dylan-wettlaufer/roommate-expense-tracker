@@ -6,6 +6,8 @@ from uuid import UUID, uuid4
 
 # Base model for shared user fields
 class UserBase(BaseModel):
+    first_name: str = Field(...)
+    last_name: str = Field(...)
     email: EmailStr = Field(...)
 
 # For creating a new user
@@ -22,13 +24,16 @@ class UserCreate(UserBase):
 
 # For updating existing user info
 class UserUpdate(BaseModel):
-    username: Optional[str] = Field(None, min_length=3, max_length=50)
+    first_name: Optional[str] = Field(None, min_length=3, max_length=50)
+    last_name: Optional[str] = Field(None, min_length=3, max_length=50)
     email: Optional[EmailStr] = None
 
 
 # Internal full user model
 class User(BaseModel):
     id: UUID = Field(default_factory=uuid4)
+    first_name: str
+    last_name: str
     username: str
     email: EmailStr
     created_at: datetime = Field(default_factory=datetime.utcnow)

@@ -23,6 +23,8 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db_sess
 
         return User(
             id=new_user.id,
+            first_name=new_user.first_name,
+            last_name=new_user.last_name,
             username=new_user.email,
             email=new_user.email,
             created_at=new_user.created_at,

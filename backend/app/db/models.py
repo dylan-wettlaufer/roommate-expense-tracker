@@ -12,6 +12,8 @@ Base = declarative_base() # Base class for SQLAlchemy models
 class User(Base):
     __tablename__ = 'users'
     id = Column(UUID(as_uuid=True), primary_key=True, default=text("gen_random_uuid()"), index=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)

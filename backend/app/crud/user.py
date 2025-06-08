@@ -33,6 +33,8 @@ async def create_user_in_db(db: AsyncSession, user: UserCreate) -> User:
     # Create a new User instance with hashed password
     new_user = User(
         id=str(uuid.uuid4()),
+        first_name=user.first_name,
+        last_name=user.last_name,
         username=user.email,
         email=user.email,
         password=hash_password(user.password), 

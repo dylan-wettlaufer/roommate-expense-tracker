@@ -179,8 +179,9 @@ async def get_group_members_in_db(db: AsyncSession, group_id: UUID, current_user
         group_members = await db.execute(
             select(GroupMember).filter(GroupMember.group_id == group_id)
         )
-
-        return group_members.scalars().all() # return all group members
+    
+        # return all group members
+        return group_members.scalars().all()
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
