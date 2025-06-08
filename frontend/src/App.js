@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Register from './pages/Register';
-import Login from './pages/Login';
+import Register from './features/Auth/pages/Register';
+import Login from './features/Auth/pages/Login';
 
 function App() {
   const [currentView, setCurrentView] = useState('login'); // 'login' or 'register'
