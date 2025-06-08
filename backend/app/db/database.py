@@ -3,15 +3,11 @@ from sqlalchemy.future import select
 from sqlalchemy.schema import CreateTable
 from app.config.settings import settings
 from app.db.models import Base
+from typing import AsyncGenerator
 
 # Create an asynchronous SQLAlchemy engine
 engine = create_async_engine(
     settings.DATABASE_URL,
-    # Add this to disable statement caching
-    connect_args={
-        "prepared_statement_cache_size": 0,
-        "statement_cache_size": 0,
-    }
 )
 
 # Create an asynchronous session factory
@@ -33,7 +29,7 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
         print("Database tables initialized.")
 
-async def get_db_session() -> AsyncSession:
+async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """
     Get a new database session.
     This function should be used in dependency injection to provide a session

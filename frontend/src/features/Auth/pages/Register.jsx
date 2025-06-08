@@ -1,167 +1,89 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle, XCircle, AlertCircle, Users } from 'lucide-react';
-import axios from 'axios';
-import { register } from '../services/auth';
+import useForm from '../../../hooks/useForm';
+import usePasswordStrength from '../../../hooks/usePasswordStrength';
+import useRegister from '../hooks/useRegister';
+import useToggle from '../../../hooks/useToggle';
+import useValidation from '../../../hooks/useValidation';
+
 
 export default function RegisterForm() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+
+  const validationRules = {
+    firstName: (value) => {
+      if (!value.trim()) return 'First name is required';
+      if (value.trim().length < 2) return 'First name must be at least 2 characters';
+      return '';
+    },
+    lastName: (value) => {
+      if (!value.trim()) return 'Last name is required';
+      if (value.trim().length < 2) return 'Last name must be at least 2 characters';
+      return '';
+    },
+    email: (value) => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!value) return 'Email is required';
+      if (!emailRegex.test(value)) return 'Please enter a valid email address';
+      return '';
+    },
+    password: (value) => {
+      if (!value) return 'Password is required';
+      if (value.length < 8) return 'Password must be at least 8 characters';
+      return '';
+    },
+    confirmPassword: (value, formData) => { // validation for confirmPassword now uses formData
+      if (!value) return 'Please confirm your password';
+      if (value !== formData.password) return 'Passwords do not match';
+      return '';
+    },
+  };
+
+  const { values: formData, handleChange, resetForm } = useForm({
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
-  
-  // Password visibility states
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  // Form validation states
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
 
-  // Handle input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+  const { errors, touched, handleBlur, validateForm, setErrors } = useValidation();
+  const [showPassword, toggleShowPassword] = useToggle(false);
+  const [showConfirmPassword, toggleConfirmPassword] = useToggle(false);
+  const passwordStrength = usePasswordStrength(formData.password); // Using the new hook
+  const { handleRegister, isSubmitting, registerError } = useRegister(); // Using the new hook
+
+  const handleFieldBlur = (field) => {
+    handleBlur(field, formData[field], formData, validationRules); // Pass formData
   };
 
-  // Handle input focus
-  const handleBlur = (field) => {
-    setTouched(prev => ({
-      ...prev,
-      [field]: true
-    }));
-    validateField(field, formData[field]);
-  };
-
-  // Validate individual field
-  const validateField = (field, value) => {
-    let error = '';
-    
-    switch (field) {
-      case 'firstName':
-        if (!value.trim()) error = 'First name is required';
-        else if (value.trim().length < 2) error = 'First name must be at least 2 characters';
-        break;
-      case 'lastName':
-        if (!value.trim()) error = 'Last name is required';
-        else if (value.trim().length < 2) error = 'Last name must be at least 2 characters';
-        break;
-      case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!value) error = 'Email is required';
-        else if (!emailRegex.test(value)) error = 'Please enter a valid email address';
-        break;
-      case 'password':
-        if (!value) error = 'Password is required';
-        else if (value.length < 8) error = 'Password must be at least 8 characters';
-        break;
-      case 'confirmPassword':
-        if (!value) error = 'Please confirm your password';
-        else if (value !== formData.password) error = 'Passwords do not match';
-        break;
-    }
-    
-    setErrors(prev => ({
-      ...prev,
-      [field]: error
-    }));
-  };
-
-  // Get password strength
-  const getPasswordStrength = (password) => {
-    if (!password) return { score: 0, text: '', color: '' };
-    
-    let score = 0;
-    let feedback = [];
-    
-    if (password.length >= 8) score++;
-    else feedback.push('8+ characters');
-    
-    if (/[a-z]/.test(password)) score++;
-    else feedback.push('lowercase letter');
-    
-    if (/[A-Z]/.test(password)) score++;
-    else feedback.push('uppercase letter');
-    
-    if (/\d/.test(password)) score++;
-    else feedback.push('number');
-    
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++;
-    else feedback.push('special character');
-    
-    const strengthLevels = [
-      { text: 'Very Weak', color: 'text-red-600' },
-      { text: 'Weak', color: 'text-red-500' },
-      { text: 'Fair', color: 'text-yellow-500' },
-      { text: 'Good', color: 'text-blue-500' },
-      { text: 'Strong', color: 'text-green-500' },
-      { text: 'Very Strong', color: 'text-green-600' }
-    ];
-    
-    return {
-      score,
-      text: strengthLevels[score].text,
-      color: strengthLevels[score].color,
-      feedback: feedback.length > 0 ? `Missing: ${feedback.join(', ')}` : 'All requirements met'
-    };
-  };
-
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate all fields
-    Object.keys(formData).forEach(field => {
-      validateField(field, formData[field]);
-      setTouched(prev => ({ ...prev, [field]: true }));
-    });
-    
-    // Check if form is valid
-    const hasErrors = Object.values(errors).some(error => error !== '');
-    const isEmpty = Object.values(formData).some(value => !value.trim());
-    
-    if (!hasErrors && !isEmpty) { // If form is valid
-      try {
-        const response = await register({
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
-            password: formData.password,
-            confirmPassword: formData.confirmPassword
-        });
 
-        console.log('Registration successful:', response.data);
-        alert('Registration successful! Welcome to SplitEase!');
-
-      } catch (error) { // If registration fails
-        console.error('Registration failed:', error);
-        if (axios.isAxiosError(error)) {
-            if (error.response?.status === 400) {
-                setErrors({ email: 'Email already exists' });
+    const formIsValid = validateForm(formData, validationRules);
+    
+    if (formIsValid) {
+      const { success, error } = await handleRegister(formData.first_name, formData.last_name, formData.email, formData.password, formData.confirmPassword);
+      if (success) {
+        resetForm(); // Reset form on success
+        alert("Registration successful!");
+        // Navigation handled by useRegister
+      } else {
+        // Errors are set within useRegister; display them here or map to specific fields
+        if (error) {
+            // Check if error contains email-related message
+            const emailError = error.toLowerCase().includes('email') ? error : null;
+            if (emailError) {
+                setErrors(prev => ({ ...prev, email: emailError }));
             } else {
-                alert('Registration failed. Please try again.');
+                // Set as general error
+                setErrors(prev => ({ ...prev, general: error }));
             }
-        } else {
-            alert('Registration failed. Please try again.');
         }
       }
     }
-  };
-
-  const passwordStrength = getPasswordStrength(formData.password);
+    
+  }
+  
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
@@ -177,24 +99,22 @@ export default function RegisterForm() {
 
         {/* Form */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <div className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6"> {/* Use form tag */}
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    onBlur={() => handleBlur('firstName')}
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleChange}
+                    onBlur={() => handleFieldBlur('first_name')}
                     className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:outline-none transition-colors bg-gray-50 ${
-                      touched.firstName && errors.firstName 
-                        ? 'border-red-300 focus:ring-red-500' 
+                      touched.first_name && errors.first_name
+                        ? 'border-red-300 focus:ring-red-500'
                         : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500'
                     }`}
                     placeholder="John"
@@ -209,29 +129,27 @@ export default function RegisterForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    onBlur={() => handleBlur('lastName')}
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleChange}
+                    onBlur={() => handleFieldBlur('last_name')}
                     className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:outline-none transition-colors bg-gray-50 ${
-                      touched.lastName && errors.lastName 
-                        ? 'border-red-300 focus:ring-red-500' 
+                      touched.last_name && errors.last_name
+                        ? 'border-red-300 focus:ring-red-500'
                         : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500'
                     }`}
                     placeholder="Doe"
                   />
                 </div>
-                {touched.lastName && errors.lastName && (
+                {touched.last_name && errors.last_name && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
                     <XCircle className="w-4 h-4 mr-1" />
-                    {errors.lastName}
+                    {errors.last_name}
                   </p>
                 )}
               </div>
@@ -239,20 +157,18 @@ export default function RegisterForm() {
 
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
-                  onChange={handleInputChange}
-                  onBlur={() => handleBlur('email')}
+                  onChange={handleChange}
+                  onBlur={() => handleFieldBlur('email')}
                   className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:outline-none transition-colors bg-gray-50 ${
-                    touched.email && errors.email 
-                      ? 'border-red-300 focus:ring-red-500' 
+                    touched.email && errors.email
+                      ? 'border-red-300 focus:ring-red-500'
                       : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500'
                   }`}
                   placeholder="john.doe@example.com"
@@ -268,33 +184,31 @@ export default function RegisterForm() {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
-                  onChange={handleInputChange}
-                  onBlur={() => handleBlur('password')}
+                  onChange={handleChange}
+                  onBlur={() => handleFieldBlur('password')}
                   className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:ring-2 focus:outline-none transition-colors bg-gray-50 ${
-                    touched.password && errors.password 
-                      ? 'border-red-300 focus:ring-red-500' 
+                    touched.password && errors.password
+                      ? 'border-red-300 focus:ring-red-500'
                       : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500'
                   }`}
                   placeholder="Enter your password"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={toggleShowPassword}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              
+
               {/* Password Strength Indicator */}
               {formData.password && (
                 <div className="mt-2">
@@ -305,7 +219,7 @@ export default function RegisterForm() {
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className={`h-2 rounded-full transition-all ${
                         passwordStrength.score <= 1 ? 'bg-red-500' :
                         passwordStrength.score <= 2 ? 'bg-yellow-500' :
@@ -317,7 +231,7 @@ export default function RegisterForm() {
                   <p className="text-xs text-gray-500 mt-1">{passwordStrength.feedback}</p>
                 </div>
               )}
-              
+
               {touched.password && errors.password && (
                 <p className="mt-1 text-sm text-red-600 flex items-center">
                   <XCircle className="w-4 h-4 mr-1" />
@@ -328,33 +242,31 @@ export default function RegisterForm() {
 
             {/* Confirm Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   name="confirmPassword"
                   value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  onBlur={() => handleBlur('confirmPassword')}
+                  onChange={handleChange}
+                  onBlur={() => handleFieldBlur('confirmPassword')}
                   className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:ring-2 focus:outline-none transition-colors bg-gray-50 ${
-                    touched.confirmPassword && errors.confirmPassword 
-                      ? 'border-red-300 focus:ring-red-500' 
+                    touched.confirmPassword && errors.confirmPassword
+                      ? 'border-red-300 focus:ring-red-500'
                       : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500'
                   }`}
                   placeholder="Confirm your password"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onClick={toggleConfirmPassword}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              
+
               {/* Password Match Indicator */}
               {formData.confirmPassword && (
                 <div className="mt-1">
@@ -371,7 +283,7 @@ export default function RegisterForm() {
                   )}
                 </div>
               )}
-              
+
               {touched.confirmPassword && errors.confirmPassword && (
                 <p className="mt-1 text-sm text-red-600 flex items-center">
                   <XCircle className="w-4 h-4 mr-1" />
@@ -380,15 +292,38 @@ export default function RegisterForm() {
               )}
             </div>
 
+            {/* General Register Error Display */}
+            {registerError && (
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <XCircle className="w-4 h-4 mr-1" />
+                {/* Check if registerError is an object and has a 'msg' property, then display msg.
+        Otherwise, display registerError as is (assuming it's already a string). */}
+                {typeof registerError === 'object' && registerError !== null && registerError.msg
+                  ? registerError.msg
+                  : registerError}
+              </p>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              onClick={handleSubmit}
-              className="w-full bg-gradient-to-r from-teal-400 to-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:from-teal-500 hover:to-blue-600 focus:ring-4 focus:ring-blue-200 transition-all duration-200 flex items-center justify-center"
+              disabled={isSubmitting}
+              className={`w-full py-3 px-4 rounded-xl font-medium focus:ring-4 focus:ring-blue-200 transition-all duration-200 flex items-center justify-center ${
+                isSubmitting
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-gradient-to-r from-teal-400 to-blue-500 text-white hover:from-teal-500 hover:to-blue-600'
+              }`}
             >
-              Create Account
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                  Creating Account...
+                </>
+              ) : (
+                'Create Account'
+              )}
             </button>
-            </div>
+          </form>
 
           {/* Footer */}
           <div className="mt-6 text-center">

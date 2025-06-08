@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '../../../services/api';
+import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Users, Mail, Lock, XCircle } from 'lucide-react';
 import useLogin from '../hooks/useLogin';
 import useForm from '../../../hooks/useForm';
@@ -38,12 +38,13 @@ const Login = () => {
     e.preventDefault();
     const formIsValid = validateForm(formData, validationRules);
 
-    if(formIsValid) {
-      const success = await handleLogin(formData.email, formData.password);
+    if (formIsValid) {
+      const { success, error } = await handleLogin(formData.email, formData.password);
       if (success) {
         resetForm();
       } else {
-        console.log("Login failed");
+        // Set the error message in the validation errors
+        setErrors(prev => ({ ...prev, general: error }));
       }
     }
   }
@@ -150,10 +151,10 @@ const Login = () => {
             </div>
 
             {/* General Login Error Display */}
-            {loginError && (
+            {errors.general && (
               <p className="mt-1 text-sm text-red-600 flex items-center">
                 <XCircle className="w-4 h-4 mr-1" />
-                {loginError}
+                {errors.general}
               </p>
             )}
 
@@ -182,9 +183,11 @@ const Login = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               Don't have an account?{' '}
-              <a href="#" className="text-blue-600 font-medium hover:underline">
-                Create account
-              </a>
+              <Link to="/register">
+                <a href="#" className="text-blue-600 font-medium hover:underline">
+                  Create account
+                </a>
+              </Link>
             </p>
           </div>
         </div>
