@@ -59,11 +59,13 @@ const DisplayGroups = () => {
             >
               Create Group
             </Button>
-            <Button 
+            <button 
+              className="bg-white hover:bg-zinc-300 border-0 shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+             text-neutral-800 font-medium py-2 px-4 rounded-lg"
               onClick={handleJoinGroup}
             >
               Join Group
-            </Button>
+            </button>
           </div>
 
           {showCreateGroup && <CreateGroup handleCreateGroup={handleCreateGroup} onGroupCreated={handleGroupCreated}/>}
@@ -108,12 +110,11 @@ const DisplayGroups = () => {
                 </div>
                 <h3 className="text-lg font-medium text-white mb-2">No groups found</h3>
                 <p className="text-white mb-6">Get started by creating your first group or joining an existing one.</p>
-                <button 
+                <Button 
                   onClick={handleCreateGroup}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
                 >
                   Create Your First Group
-                </button>
+                </Button>
               </div>
             )}
           </div>
