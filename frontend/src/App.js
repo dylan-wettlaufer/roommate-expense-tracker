@@ -4,6 +4,7 @@ import Register from './features/Auth/pages/Register';
 import Login from './features/Auth/pages/Login';
 import DisplayGroups from './features/Groups/pages/DisplayGroups';
 import PrivateRoute from './components/PrivateRoute';
+import Landing from './pages/Landing';
 
 function App() {
   const [currentView, setCurrentView] = useState('login'); // 'login' or 'register'
@@ -11,7 +12,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route element={<PrivateRoute />}>
           <Route path="/groups" element={<DisplayGroups />} />

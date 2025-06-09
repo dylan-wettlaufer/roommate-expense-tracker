@@ -6,7 +6,7 @@ const PrivateRoute = () => {
   const { isAuthenticated } = useAuth(); // Get auth status from your hook
 
   // If authenticated, render child routes. Otherwise, redirect to login.
-  return isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default PrivateRoute;

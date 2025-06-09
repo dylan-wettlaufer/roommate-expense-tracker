@@ -8,6 +8,10 @@ from typing import AsyncGenerator
 # Create an asynchronous SQLAlchemy engine
 engine = create_async_engine(
     settings.DATABASE_URL,
+    pool_size=20,
+    max_overflow=0,
+    pool_pre_ping=True,  # Validates connections before use
+    pool_recycle=3600   # Recycle connections every hour
 )
 
 # Create an asynchronous session factory
