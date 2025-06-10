@@ -10,3 +10,7 @@ export const viewGroups = async () => {
     return response.data;
 };
 
+export const joinGroup = async (groupCode) => {
+    const response = await api.post('/groups/join', { groupCode });
+    return response.data;
+};

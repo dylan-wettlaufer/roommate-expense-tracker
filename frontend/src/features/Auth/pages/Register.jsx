@@ -330,7 +330,7 @@ export default function RegisterForm() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               Already have an account?{' '}
-              <Link to="/" className='text-blue-600 font-medium hover:underline'>
+              <Link to="/login" className='text-blue-600 font-medium hover:underline'>
                 Sign in here
               </Link>
             </p>

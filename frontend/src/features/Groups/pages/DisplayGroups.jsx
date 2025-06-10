@@ -5,11 +5,14 @@ import { viewGroups } from '../services/groups';
 import Header from '../../../components/Header';
 import Button from '../../../components/Button';
 import CreateGroup from '../components/CreateGroup';
+import JoinGroup from '../components/JoinGroup';    
+import { Users } from 'lucide-react';
 
 const DisplayGroups = () => {
     const [groups, setGroups] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showCreateGroup, setShowCreateGroup] = useState(false);
+    const [showJoinGroup, setShowJoinGroup] = useState(false);
 
     useEffect(() => {
         const fetchGroups = async () => {
@@ -34,6 +37,10 @@ const DisplayGroups = () => {
     const handleCreateGroup = () => {
         setShowCreateGroup(prev => !prev);
       };
+
+    const handleShowJoinGroup = () => {
+        setShowJoinGroup(prev => !prev);
+    };
     
     const handleJoinGroup = () => {
         console.log("Join group clicked");
@@ -44,12 +51,12 @@ const DisplayGroups = () => {
     };
     
     return (
-    <div className="min-h-screen bg-neutral-800">
+    <div className="min-h-screen bg-white">
       <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">   
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-          <p className="text-white">Manage your groups and collaborations</p>
+          <h1 className="text-3xl font-bold text-black mb-2">Home</h1>
+          <p className="text-zinc-700">Manage your groups and collaborations</p>
         </div>
         
         <div className="mb-8">
@@ -60,28 +67,29 @@ const DisplayGroups = () => {
               Create Group
             </Button>
             <button 
-              className="bg-white hover:bg-zinc-300 border-0 shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-             text-neutral-800 font-medium py-2 px-4 rounded-lg"
-              onClick={handleJoinGroup}
+              className="bg-zinc-400 hover:bg-zinc-500 border-0 shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+             text-white font-medium py-2 px-4 rounded-lg"
+              onClick={handleShowJoinGroup}
             >
               Join Group
             </button>
           </div>
 
           {showCreateGroup && <CreateGroup handleCreateGroup={handleCreateGroup} onGroupCreated={handleGroupCreated}/>}
+          {showJoinGroup && <JoinGroup handleShowJoinGroup={handleShowJoinGroup}/>}
         </div>
         
-        <div className="bg-neutral-600 rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-white">Your Groups</h2>
+        <div className="bg-neutral-50 rounded-xl shadow-sm border border-zinc-300">
+          <div className="px-6 py-4 border-b border-zinc-300">
+            <h2 className="text-xl font-semibold text-black">Your Groups</h2>
           </div>
           
-          <div className="p-6">
+          <div className="p-4">
             {isSubmitting ? (
               <div className="flex items-center justify-center py-12">
                 <div className="flex items-center space-x-3">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                  <p className="text-white">Loading groups...</p>
+                  <p className="text-black">Loading groups...</p>
                 </div>
               </div>
             ) : groups.length > 0 ? (
@@ -89,12 +97,21 @@ const DisplayGroups = () => {
                 {groups.map(group => (
                   <div 
                     key={group.id} 
-                    className="bg-neutral-600 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 cursor-pointer hover:bg-neutral-700"
+                    className="bg-gradient-to-r from-white to-neutral-100 rounded-lg p-6 border border-gray-200 hover:bg-neutral-300 transition-shadow duration-200 cursor-pointer hover:bg-neutral-700"
                   >
-                    <h3 className="font-semibold text-white mb-2 text-lg">{group.name}</h3>
-                    <p className="text-white text-sm leading-relaxed">{group.description}</p>
+                    <div className='flex items-center gap-3 mb-4'>
+                        <div className="w-12 h-12 bg-cyan-600 rounded-lg flex items-center justify-center">
+                            <Users className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-black text-lg">{group.name}</h3>
+                            <p className='text-zinc-600 text-sm'>Members</p>
+                        </div>
+                    </div>   
+                    
+                    <p className="text-black text-sm leading-relaxed">{group.description}</p>
                     <div className="mt-4 flex justify-end">
-                      <button className="text-white hover:text-white text-sm font-medium transition-colors">
+                      <button className="text-black hover:text-black text-sm font-medium transition-colors">
                         View Details →
                       </button>
                     </div>
@@ -108,8 +125,8 @@ const DisplayGroups = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-white mb-2">No groups found</h3>
-                <p className="text-white mb-6">Get started by creating your first group or joining an existing one.</p>
+                <h3 className="text-lg font-medium text-black mb-2">No groups found</h3>
+                <p className="text-black mb-6">Get started by creating your first group or joining an existing one.</p>
                 <Button 
                   onClick={handleCreateGroup}
                 >

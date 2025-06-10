@@ -12,7 +12,7 @@ const Header = () => {
     };
 
     return (
-    <header className="bg-gradient-to-r from-blue-600 to-purple-600 shadow-sm border-b border-gray-200">
+    <header className="bg-cyan-600 shadow-sm border-b border-gray-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
             <h1 className="text-xl font-semibold text-white">SplitMates</h1>

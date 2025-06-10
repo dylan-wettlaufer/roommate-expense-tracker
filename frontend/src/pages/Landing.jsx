@@ -49,7 +49,7 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-light via-green-light to-blue-light text-foreground overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-light via-green-light to-blue-light text-foreground overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-primary rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
