@@ -1,15 +1,16 @@
 from app.db.database import get_db_session
 from app.db.models import Group
-from app.schemas.group import GroupCreate, GroupUpdate, InviteCode
+from app.schemas.group import GroupCreate, GroupUpdate, InviteCode, GroupOut
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
-from fastapi import HTTPException, Depends, Path
+from fastapi import HTTPException
 from app.utils.dependencies import get_current_user
 from app.db.models import User, GroupMember
 import secrets
 from sqlalchemy import select
 import string
 from uuid import UUID
+from sqlalchemy import func
 
 def generate_invite_code():
     """Generate a unique 8-character invite code"""
@@ -110,7 +111,7 @@ async def update_group_in_db(db: AsyncSession, group_id: UUID, group: GroupUpdat
     finally:
         db.close()
 
-async def add_member_to_group_in_db(db: AsyncSession, group_id: UUID, invite_code: InviteCode, user: User) -> Optional[GroupMember]:
+async def add_member_to_group_in_db(db: AsyncSession, invite_code: InviteCode, user: User) -> Optional[GroupMember]:
     """
     Add a member to a group in the database.
     :param db: The database session to use for the operation.
@@ -121,28 +122,28 @@ async def add_member_to_group_in_db(db: AsyncSession, group_id: UUID, invite_cod
     try:
         # Get the group by ID
         result = await db.execute(
-            select(Group).filter(Group.id == group_id)
+            select(Group).filter(Group.invite_code == invite_code.invite_code)
         )
 
         db_group = result.scalar_one_or_none()
 
         if db_group is None:
-            raise ValueError(f"Group '{group_id}' not found.")
+            raise ValueError(f"Group '{invite_code.invite_code}' not found.")
 
         if db_group.invite_code != invite_code.invite_code:
             raise ValueError(f"Invalid invite code '{invite_code.invite_code}'.")
         
         db_group_member = await db.execute( # check if the user is already in the group
-            select(GroupMember).filter(GroupMember.group_id == group_id, GroupMember.user_id == user.id)
+            select(GroupMember).filter(GroupMember.group_id == db_group.id, GroupMember.user_id == user.id)
         )
 
         db_group_member = db_group_member.scalar_one_or_none() # get the group member
 
         if db_group_member is not None: # if the user is already in the group
-            raise ValueError(f"User '{user.id}' is already a member of group '{group_id}'.") # raise an error
+            raise ValueError(f"User '{user.id}' is already a member of group '{db_group.id}'.") # raise an error
 
         db_group_member = GroupMember( # create new group member
-            group_id=group_id,
+            group_id=db_group.id,
             user_id=user.id,
             is_admin=False,
         )
@@ -189,7 +190,7 @@ async def get_group_members_in_db(db: AsyncSession, group_id: UUID, current_user
         db.close()
     
 
-async def get_all_groups_in_db(db: AsyncSession, current_user: User) -> list[Group]:
+async def get_all_groups_in_db(db: AsyncSession, current_user: User) -> list[GroupOut]:
     """
     Retrieve all groups.
     This endpoint allows the authenticated user to retrieve all groups.
@@ -198,7 +199,24 @@ async def get_all_groups_in_db(db: AsyncSession, current_user: User) -> list[Gro
         result = await db.execute(  
             select(Group).join(GroupMember).where(GroupMember.user_id == current_user.id)
         )
-        return result.scalars().all()
+        groupList = result.scalars().all() # get all groups the user is a member of
+
+        group_outputs = [] # list to store group outputs
+        for group in groupList:
+            member_count_result = await db.execute( # get the number of members in the group
+                select(func.count(GroupMember.user_id)).where(GroupMember.group_id == group.id)
+            )
+            member_count = member_count_result.scalar() # get the number of members in the group
+            group_outputs.append(GroupOut( # append the group to the list
+                id=group.id,
+                name=group.name,
+                description=group.description,
+                member_count=member_count
+            ))
+
+        return group_outputs
+
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:

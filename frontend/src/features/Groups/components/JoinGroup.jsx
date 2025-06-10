@@ -3,49 +3,34 @@ import { useState } from 'react';
 import { joinGroup } from '../services/groups';
 
 const JoinGroup = (props) => {
-    const [groupCode, setGroupCode] = useState('');
+    const [invite_code, setInviteCode] = useState('');
     const [errors, setErrors] = useState({});
     const [isJoining, setIsJoining] = useState(false);
 
-    const validationRules = {
-        groupCode: (value) => {
-          if (!value) return 'Group code is required';
-          return '';
-        }
+    const handleInviteCodeChange = (e) => { // handle invite code change
+        setInviteCode(e.target.value);
       };
 
-    const handleGroupCodeChange = (e) => {
-        setGroupCode(e.target.value);
-      };
-
-    const handleJoinGroup = () => {
-        console.log("Join group clicked");
-      };
-
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => { // handle form submission
         e.preventDefault();
-        if (groupCode) {
+        if (invite_code) { // if invite code is not empty
           setIsJoining(true);
           try {
-            const response = await joinGroup(groupCode);
+            const response = await joinGroup(invite_code);
             console.log(response);
-            setGroupCode('');
+            setInviteCode('');
             setErrors({});
-            setIsJoining(false);
+            setIsJoining(false); // stop loading
+            props.onGroupJoined(response); // add the group to the groups list
+            props.handleShowJoinGroup(); // close the join group modal
           } catch (error) {
-            setErrors(prev => ({ ...prev, general: 'Group code is invalid' }));
+            setErrors(prev => ({ ...prev, invite_code: 'Group code is invalid' }));
           } finally {
-            setIsJoining(false);
+            setIsJoining(false); // stop loading
           }
         } else {
-          setErrors(prev => ({ ...prev, general: 'Please fill in all required fields' }));
+          setErrors(prev => ({ ...prev, invite_code: 'Please fill in all required fields' }));
         }
-      };
-
-    const handleClose = () => {
-        setGroupCode('');
-        setErrors({});
-        setIsJoining(false);
       };
 
       return (
@@ -60,12 +45,12 @@ const JoinGroup = (props) => {
                         <input
                             type="text"
                             required
-                            value={groupCode}
-                            onChange={handleGroupCodeChange}
+                            value={invite_code}
+                            onChange={handleInviteCodeChange}
                             className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                         />
-                        {errors.groupCode && (
-                            <p className="mt-1 text-sm text-red-600">{errors.groupCode}</p>
+                        {errors.invite_code && (
+                            <p className="mt-1 text-sm text-red-600">{errors.invite_code}</p>
                         )}
                     </div>
 

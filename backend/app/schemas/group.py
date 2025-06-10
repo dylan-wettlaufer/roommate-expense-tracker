@@ -30,6 +30,14 @@ class GroupUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=3, max_length=50)
     description: Optional[str] = Field(None, max_length=500)
     
+class GroupOut(BaseModel):
+    id: UUID = Field(...)
+    name: str = Field(...)
+    description: Optional[str] = Field(None)
+    member_count: int = Field(...)
+
+    class Config:
+        orm_mode = True
     
 
 class GroupDelete(BaseModel):

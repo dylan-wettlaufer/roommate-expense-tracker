@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.crud.group import create_group_in_db, get_group_by_id, update_group_in_db, get_group_members_in_db
-from app.schemas.group import GroupCreate, GroupUpdate, Group, InviteCode
+from app.schemas.group import GroupCreate, GroupUpdate, Group, InviteCode, GroupOut
 from app.utils.dependencies import get_current_user
 from app.db.models import User
 from fastapi import HTTPException, Depends, Path, status
@@ -60,14 +60,14 @@ async def get_group(group_id: UUID, db: AsyncSession = Depends(get_db_session), 
             detail=str(e)
         )
 
-@router.post("/groups/member/{group_id}", response_model=GroupMember)
-async def add_member_to_group(group_id: UUID, invite_code: InviteCode, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
+@router.post("/groups/join", response_model=GroupMember)
+async def add_member_to_group(invite_code: InviteCode, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
     """
     Add a member to a group.
     This endpoint allows the authenticated user to add a member to a group.
     """
     try:
-        group_member = await add_member_to_group_in_db(db, group_id, invite_code, current_user) # Call the add_member_to_group_in_db function from crud.py
+        group_member = await add_member_to_group_in_db(db, invite_code, current_user) # Call the add_member_to_group_in_db function from crud.py
         return group_member
     except ValueError as e:
         raise HTTPException(
@@ -91,7 +91,7 @@ async def get_group_members(group_id: UUID, db: AsyncSession = Depends(get_db_se
             detail=str(e)
         )
 
-@router.get("/groups/all", response_model=list[Group])
+@router.get("/groups/all", response_model=list[GroupOut])
 async def get_all_groups(db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
     """
     Retrieve all groups.

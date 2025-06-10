@@ -11,13 +11,6 @@ const CreateGroup = (props) => {
     const [errors, setErrors] = useState({});
     const [isCreating, setIsCreating] = useState(false);
 
-    const validationRules = {
-        name: (value) => {
-          if (!value) return 'Group name is required';
-          return '';
-        }
-      };
-
     
     const handleMemberChange = (index, field, value) => {
         const updatedMembers = [...members];
