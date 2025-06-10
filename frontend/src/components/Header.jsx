@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../features/Auth/services/auth';
 
 
@@ -12,13 +12,13 @@ const Header = () => {
     };
 
     return (
-    <header className="bg-cyan-600 shadow-sm border-b border-gray-500">
+    <header className="bg-gradient-to-r from-cyan-600 to-sky-600 shadow-sm border-b border-gray-500 rounded-b-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-semibold text-white">SplitMates</h1>
+            <h1 className="text-4xl font-extrabold tracking-wider text-white font-serif">SplitMates</h1>
             <nav className="flex space-x-4">
-            <a href="#" className="text-white hover:text-white transition-colors">Home</a>
-            <a href="#" className="text-white hover:text-white transition-colors">Profile</a>
+            <Link to="/groups" className="text-white hover:text-white transition-colors">Home</Link>
+            <Link to="/profile" className="text-white hover:text-white transition-colors">Profile</Link>
             </nav>
             <button 
             onClick={handleLogout}

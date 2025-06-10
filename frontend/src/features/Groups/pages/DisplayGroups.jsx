@@ -1,6 +1,5 @@
-import React from 'react';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { viewGroups } from '../services/groups';
 import Header from '../../../components/Header';
 import Button from '../../../components/Button';
@@ -113,11 +112,14 @@ const DisplayGroups = () => {
                         </div>
                     </div>   
                     
-                    <p className="text-black text-sm leading-relaxed">{group.description}</p>
-                    <div className="mt-4 flex justify-end">
-                      <button className="text-black hover:text-black text-sm font-medium transition-colors">
-                        View Details →
-                      </button>
+                    <p className="text-zinc-600 text-sm leading-relaxed break-words">{group.description}</p>
+                    <div className="mt-4 flex justify-between">
+                      <p className="text-zinc-600 text-sm">Total Expenses:</p>
+                      <Link to={`/group/${group.id}`}>
+                        <button className="text-black hover:text-black text-sm font-medium transition-colors">
+                          View →
+                        </button>
+                      </Link>
                     </div>
                   </div>
                 ))}
