@@ -15,7 +15,7 @@ const Header = () => {
     <header className="bg-gradient-to-r from-cyan-600 to-sky-600 shadow-sm border-b border-gray-500 rounded-b-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-            <h1 className="text-4xl font-extrabold tracking-wider text-white font-serif">SplitMates</h1>
+            <h1 className="text-3xl font-extrabold text-white font-sans">SplitMates</h1>
             <nav className="flex space-x-4">
             <Link to="/groups" className="text-white hover:text-white transition-colors">Home</Link>
             <Link to="/profile" className="text-white hover:text-white transition-colors">Profile</Link>

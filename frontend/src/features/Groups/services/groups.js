@@ -19,3 +19,15 @@ export const viewGroup = async (id) => {
     const response = await api.get(`/groups/single/${id}`);
     return response.data;
 }
+
+export const getGroupMembers = async (group_id) => {
+    const response = await api.get(`/groups/get-members/${group_id}`);
+    var users = [];
+    
+    for (let i = 0; i < response.data.length; i++) {
+        var temp = await api.get(`/users/single/${response.data[i].user_id}`);
+        users.push(temp.data);
+    }
+
+    return users;
+}

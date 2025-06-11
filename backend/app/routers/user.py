@@ -4,10 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db_session
 from app.db.models import User
 from app.schemas.user import UserCreate, UserUpdate, User, UserPasswordChange
-from app.crud.user import create_user_in_db as create_user, get_user_by_username, update_password
+from app.crud.user import create_user_in_db as create_user, get_user_by_username, update_password, get_user_by_id
 from fastapi.security import OAuth2PasswordRequestForm
 from app.utils.auth import create_access_token, verify_password
 from app.utils.dependencies import get_current_user
+from uuid import UUID
+
 
 router = APIRouter()
 
@@ -65,6 +67,21 @@ async def get_current_user(db: AsyncSession = Depends(get_db_session), current_u
     This endpoint returns the details of the currently authenticated user.
     """
     return current_user
+
+@router.get("/users/single/{user_id}", response_model=User)
+async def get_user(user_id: UUID, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
+    """
+    Retrieve a user by their ID.
+    This endpoint allows the authenticated user to retrieve a user by their ID.
+    """
+    try:
+        user = await get_user_by_id(db, user_id) # Call the get_user_by_id_in_db function from crud.py
+        return user
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 
 @router.post("/change-password", response_model=User, status_code=status.HTTP_200_OK)
