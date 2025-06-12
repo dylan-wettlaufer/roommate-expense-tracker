@@ -63,15 +63,15 @@ const Group = () => {
     }, []);
 
     return (
-        <div>
+        <div className='bg-gray-100'>
             <Header />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-                <div className="mb-8 flex flex-col sm:flex-row justify-between gap-10 bg-neutral-100 rounded-xl p-4 shadow-md">
+                <div className="mb-4 flex flex-col sm:flex-row justify-between gap-10 bg-neutral-100 rounded-xl p-4 border border-zinc-300">
                     <div className='flex flex-col gap-2'>
-                        <h1 className="text-3xl font-semibold text-black">{group.name}</h1>
-                        <p className='text-zinc-600 text-sm'>{group.description}</p>
-                        <div className='flex flex-row items-center gap-2'>
+                        <h1 className="text-3xl font-semibold text-black font-display">{group.name}</h1>
+                        <p className='text-zinc-600 text-sm font-sans1'>{group.description}</p>
+                        <div className='flex flex-row items-center gap-2 font-sans1'>
                             <Calendar className="w-4 h-4 text-zinc-600" />
                             <p className='text-zinc-800 text-md'>Created on {new Date(group.created_at).toLocaleDateString(undefined, {
                                     year: 'numeric',
@@ -81,11 +81,11 @@ const Group = () => {
                         </div>
                         
                     </div>
-                    <div className='flex flex-row items-center gap-2'>
+                    <div className='flex flex-row items-center gap-4'>
                         
-                        <div className='flex flex-row items-center gap-2 bg-neutral-200 p-4 rounded-xl'>
-                            <div className='rounded-lg bg-sky-200 p-2'>
-                                <DollarSign className="w-6 h-6 text-sky-600" />
+                        <div className='flex flex-row items-center gap-2 bg-neutral-200 p-2 rounded-xl border border-zinc-300'>
+                            <div className='rounded-lg p-2'>
+                                <DollarSign className="w-6 h-6 text-neutral-600" />
                             </div>
                             <div>
                                 <p className='text-zinc-600 text-sm'>Total Expenses</p>
@@ -93,14 +93,14 @@ const Group = () => {
                             </div>
                         </div>
 
-                        <div className='flex flex-row items-center gap-2 bg-neutral-200 p-4 rounded-xl'>
+                        <div className='flex flex-row items-center gap-2 bg-neutral-200 p-2 rounded-xl border border-zinc-300'>
                             {trendingUp ? (
-                                <div className='rounded-lg bg-emerald-200 p-2'>
-                                    <TrendingUp className="w-6 h-6 text-emerald-600" />
+                                <div className='rounded-lg p-2'>
+                                    <TrendingUp className="w-6 h-6 text-neutral-600" />
                                 </div>
                             ) : (
-                                <div className='rounded-lg bg-red-200 p-2'>
-                                    <TrendingDown className="w-6 h-6 text-red-600" />
+                                <div className='rounded-lg p-2'>
+                                    <TrendingDown className="w-6 h-6 text-neutral-600" />
                                 </div>
                             )}
                             {trendingUp ? (
@@ -116,18 +116,64 @@ const Group = () => {
                             )}
                         </div>
 
-                        <div className='flex flex-row items-center gap-2 bg-neutral-200 p-4 rounded-xl'>
-                            <div className='rounded-lg bg-orange-200 p-2'>
-                                <Users className="w-6 h-6 text-orange-600" />
+                        <div className='flex flex-row items-center gap-2 bg-neutral-200 p-2 rounded-xl border border-zinc-300'>
+                            <div className='rounded-lg p-2'>
+                                <Users className="w-6 h-6 text-neutral-600" />
                             </div>
                             <div>
                                 <p className='text-zinc-600 text-sm'>Members</p>
                                 <p className='text-zinc-800 font-semibold text-md'>{members.length}</p>
                             </div>
                         </div>
-
                     </div>
+                </div>
+
+                {/* Buttons */}
+                <div className='mb-4 flex flex-col sm:flex-row justify-between gap-10 bg-neutral-100 rounded-xl p-4 border border-zinc-300'>
+                    <button className='w-full h-12 bg-emerald-600 hover:bg-emerald-700 border border-zinc-800 rounded-xl text-white font-medium py-2 px-4'>
+                        + Add Expense
+                    </button>
+                    <button className='w-full h-12 bg-neutral-500 hover:bg-neutral-600 border border-zinc-800 rounded-xl text-white font-medium py-2 px-4'>
+                        $ Settle Up
+                    </button>
+                    <button className='w-full h-12 bg-white hover:bg-gray-200 border border-zinc-400 rounded-xl text-zinc-800 font-medium py-2 px-4'>
+                        Expense History
+                    </button>
+                </div>
+
+                {/* Members */}
+                <div className='mb-8'>
+                {isMembersSubmitting ? (
+                        <div className="flex items-center justify-center py-12 w-full h-full bg-neutral-100">
+                            <div className="flex items-center space-x-3">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                <p className="text-black">Loading members...</p>
+                            </div>
+                        </div>
+                    ) : (
+                    <div className='flex flex-col bg-neutral-100 rounded-xl p-4 shadow-md gap-2 w-full h-full'>
+                        <div className="flex flex-row items-center justify-between gap-2 border-b border-zinc-200 pb-2">
+                            <h1 className="text-lg font-semibold text-zinc-800">Members</h1>
+                            <button onClick={() => {}}>
+                                <UserRoundPlus className="w-6 h-6 text-zinc-600" />
+                            </button>
+                        </div>
                     
+                        <div className='flex flex-col gap-2'>
+                            {members.map((member) => (
+                                <div className='flex flex-row items-center gap-2 border-b border-zinc-200 pb-2'>
+                                    <div className='rounded-full bg-sky-900 p-2 w-12 h-12 flex items-center justify-center'>
+                                        <p className='text-white font-semibold text-md'>{member.first_name[0]}{member.last_name[0]}</p>
+                                    </div>
+                                    <div key={member.id} className='flex flex-col'>
+                                        <p className='text-zinc-800 font-semibold text-md'>{member.first_name} {member.last_name}</p>
+                                        <p className='text-zinc-600 text-sm'>{member.email}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    )}
                 </div>
 
                 <div className="mb-8 flex flex-col sm:flex-row justify-between gap-10">
@@ -191,7 +237,7 @@ const Group = () => {
 
                     {/* Members */}
 
-                    {isSubmitting ? (
+                    {isMembersSubmitting ? (
                         <div className="flex items-center justify-center py-12 w-full h-full bg-neutral-100">
                             <div className="flex items-center space-x-3">
                                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>

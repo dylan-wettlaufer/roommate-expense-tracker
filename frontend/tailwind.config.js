@@ -2,10 +2,14 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}", // This tells Tailwind to scan your React components
-    "./public/index.html",       // And your main HTML file
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./public/index.html",
   ],
   theme: {
+    fontFamily: {
+      sans1: ['Inter', 'sans-serif'],
+      display: ['Manrope', 'sans-serif'],
+    },
     extend: {
       colors: {
         "color-primary": "#0891b2",
@@ -29,6 +33,10 @@ module.exports = {
         "green-quaternary": "#04312D",
         "blue-quinary": "#1E2348",
         "green-quinary": "#042626",
+      },
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        'success-gradient': 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
       }
     },
   },

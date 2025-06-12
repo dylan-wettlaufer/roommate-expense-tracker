@@ -54,7 +54,7 @@ const DisplayGroups = () => {
     };
     
     return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-100">
       <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">   
         <div className="mb-8">
@@ -70,7 +70,7 @@ const DisplayGroups = () => {
               Create Group
             </Button>
             <button 
-              className="bg-zinc-400 hover:bg-zinc-500 border-0 shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+              className="bg-indigo-500 hover:bg-indigo-600 border-0 shadow-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
              text-white font-medium py-2 px-4 rounded-lg"
               onClick={handleShowJoinGroup}
             >
@@ -103,7 +103,7 @@ const DisplayGroups = () => {
                     className="bg-gradient-to-r from-white to-neutral-100 rounded-lg p-6 border border-gray-200 hover:bg-neutral-300 transition-shadow duration-200 cursor-pointer hover:bg-neutral-700"
                   >
                     <div className='flex items-center gap-3 mb-4'>
-                        <div className="w-12 h-12 bg-cyan-600 rounded-lg flex items-center justify-center">
+                        <div className="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
                             <Users className="w-6 h-6 text-white" />
                         </div>
                         <div>
