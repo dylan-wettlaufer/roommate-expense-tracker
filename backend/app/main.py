@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 from app.config.settings import settings
 from app.db.database import get_db_session, init_db
 from app.db.models import User, Group, GroupMember
-from app.routers import user, group
+from app.routers import user, group, expense
 from fastapi.middleware.cors import CORSMiddleware
 
 origins = [
@@ -58,6 +58,7 @@ app.add_middleware(
 # Include routers for user and group management
 app.include_router(user.router, prefix="/api/v1", tags=["users"])
 app.include_router(group.router, prefix="/api/v1", tags=["groups"])
+app.include_router(expense.router, prefix="/api/v1", tags=["expenses"])
 
 @app.get("/")
 def read_root():

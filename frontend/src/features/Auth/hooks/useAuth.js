@@ -18,18 +18,31 @@ const useAuth = () => {
             const { success, error } = await loginApiCall(email, password);
             if (success) {
                 setIsAuthenticated(true);
-                navigate('/groups'); // Redirect to dashboard or home page
                 return { success: true };
             } else {
             setAuthError(error || "Login failed. Please check credentials.");
             setIsAuthenticated(false);
             return { success: false, error: error };
         }
-        } catch (err) {
-            console.error("Login hook error:", err);
-            setAuthError("An unexpected error occurred during login.");
-            setIsAuthenticated(false);
-            return { success: false, error: "An unexpected error occurred." };
+        } catch (error) {
+            console.error('Login failed in useLogin:', error);
+            
+            let errorMessage = 'An unexpected error occurred during login.';
+            
+            if (error.response) {
+                if (error.response.status === 401) {
+                    errorMessage = 'Invalid email or password.';
+                } else if (error.response.status === 404) {
+                    errorMessage = 'No account found with this email.';
+                } else {
+                    errorMessage = error.response.data.detail || 'An unexpected error occurred during login.';
+                }
+            } else {
+                errorMessage = 'Network error or server unreachable. Please try again.';
+            }
+            setAuthError(errorMessage);
+            return { success: false, error: errorMessage };
+
         } finally {
             setIsSubmitting(false);
         }

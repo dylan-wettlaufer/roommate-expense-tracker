@@ -81,7 +81,7 @@ class Expense(Base):
     group = relationship('Group', back_populates='expenses')
     shares = relationship('ExpenseShares', back_populates='expense')
     group_member = relationship("GroupMember", back_populates="expenses")
-    user = relationship('User', back_populates='expenses') # Corrected line
+    user = relationship('User', back_populates='expenses')
 
 class ExpenseShares(Base):
     __tablename__ = 'expense_shares'

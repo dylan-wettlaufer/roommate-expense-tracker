@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle, XCircle, AlertCircle, Users } from 'lucide-react';
 import useForm from '../../../hooks/useForm';
 import usePasswordStrength from '../../../hooks/usePasswordStrength';
@@ -9,6 +9,7 @@ import useValidation from '../../../hooks/useValidation';
 
 
 export default function RegisterForm() {
+    const navigate = useNavigate();
 
   const validationRules = {
     firstName: (value) => {
@@ -66,7 +67,7 @@ export default function RegisterForm() {
       const { success, error } = await handleRegister(formData.first_name, formData.last_name, formData.email, formData.password, formData.confirmPassword);
       if (success) {
         resetForm(); // Reset form on success
-        alert("Registration successful!");
+        navigate('/login');
         // Navigation handled by useRegister
       } else {
         // Errors are set within useRegister; display them here or map to specific fields

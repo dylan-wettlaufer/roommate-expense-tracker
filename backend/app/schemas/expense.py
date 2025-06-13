@@ -23,17 +23,20 @@ class ExpenseUpdate(BaseModel):
 class Expense(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     group_id: UUID = Field(...)
+    user_id: UUID = Field(...)
+    group_member_id: UUID = Field(...)
     name: str = Field(..., min_length=3, max_length=50)
     amount: float = Field(..., gt=0)
     expense_type: str = Field(..., min_length=3, max_length=50)
     split_method: str = Field(..., min_length=3, max_length=50)
-    split_count: str = Field(..., min_length=3, max_length=50)
     settled: bool = Field(default=False)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc)) 
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc)) 
+    
 
     class Config:
         orm_mode = True
+
 
 class ExpenseShare(BaseModel):
     id: UUID = Field(default_factory=uuid4)
@@ -50,9 +53,14 @@ class ExpenseShare(BaseModel):
     class Config:
         orm_mode = True
 
+class ExpenseResponse(BaseModel):
+    expense: Expense
+    shares: list[ExpenseShare]
+
+
 class ExpenseSharesCreate(BaseModel):
     amount_owed: float = Field(..., gt=0)
-    amount_paid: float = Field(..., gt=0)
+    amount_paid: float = Field(..., ge=0)
     settled: bool = Field(default=False)
     percent: Optional[float] = Field(None)
     shares: Optional[float] = Field(None)

@@ -5,21 +5,31 @@ export const login = async (email, password) => {
     requestBody.append('username', email);
     requestBody.append('password', password);
 
-    const response = await api.post('/login', requestBody, {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+    try {
+        const response = await api.post('/login', requestBody, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        if (response.status === 200) {
+            const { access_token, token_type } = response.data;
+
+            if (access_token && token_type) {
+                localStorage.setItem('access_token', access_token);
+                console.log("LOGIN API: successfully received and stored token.");
+                return { success: true, data: response.data };
+            }
+            return { success: false, error: "Login failed. Please try again." };
+        } else if (response.status === 401) {
+            return { success: false, error: "Invalid credentials." };
+        } else {
+            return { success: false, error: "Login failed. Please try again." };
         }
-    });
-
-    const { access_token, token_type } = response.data;
-
-    if (access_token && token_type) {
-        localStorage.setItem('access_token', access_token);
-        console.log("LOGIN API: Successfully received and stored token. Response data:", response.data); // <--- ADD THIS
-        return {success: true, data: response.data};
+    } catch (err) {
+        console.error("Login API Error!", err);
+        return { success: false, error: err.detail };
     }
-    
-    return {success: false, error: "Login failed. Please try again."};
 };
 
 export const logout = async () => {

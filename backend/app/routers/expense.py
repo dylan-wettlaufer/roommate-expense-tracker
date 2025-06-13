@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.schemas.expense import ExpenseCreate, ExpenseUpdate, Expense
+from app.schemas.expense import ExpenseCreate, ExpenseUpdate, ExpenseResponse, ExpenseShare, Expense
 from app.utils.dependencies import get_current_user
 from app.db.models import User
 from fastapi import HTTPException, Depends, Path, status
@@ -28,7 +28,7 @@ async def create_expense(expense: ExpenseCreate, group_id: UUID, db: AsyncSessio
         participants = expense.participants
         splits = expense.splits
 
-        if not participants: # ensures they are participants
+        if not participants: # ensures there are participants
             raise HTTPException(status_code=400, detail="No participants provided.")
 
         shares_to_create = [] # the number of share that swill be ceated
@@ -61,7 +61,7 @@ async def create_expense(expense: ExpenseCreate, group_id: UUID, db: AsyncSessio
             raise HTTPException(status_code=400, detail="Unsupported split method.")
 
         
-        return {"expense": new_expense, "shares": shares_to_create}
+        return new_expense  
 
     except ValueError as e: 
         raise HTTPException(

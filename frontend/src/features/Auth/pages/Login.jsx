@@ -28,6 +28,7 @@ const Login = () => {
   });
 
   const { errors, touched, handleBlur, validateForm, setErrors } = useValidation();
+  const [loginError, setLoginError] = useState('');
   const { login, isSubmitting, authError } = useAuth(); // Use the auth hook
   const [showPassword, toggleShowPassword] = useToggle(false); // Using useToggle
   const navigate = useNavigate();
@@ -36,18 +37,20 @@ const Login = () => {
     handleBlur(field, formData[field], formData, validationRules); // Pass formData
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formIsValid = validateForm(formData, validationRules);
 
     if (formIsValid) {
       const { success, error } = await login(formData.email, formData.password);
+      console.log("Login response:", { success, error });
       if (success) {
         resetForm();
         navigate('/groups');
       } else {
         // Set the error message in the validation errors
-        setErrors(prev => ({ ...prev, general: error }));
+        setLoginError(authError);
       }
     }
   }
@@ -154,10 +157,10 @@ const Login = () => {
             </div>
 
             {/* General Login Error Display */}
-            {errors.general && (
+            {loginError && (
               <p className="mt-1 text-sm text-red-600 flex items-center">
                 <XCircle className="w-4 h-4 mr-1" />
-                {errors.general}
+                {loginError}
               </p>
             )}
 
