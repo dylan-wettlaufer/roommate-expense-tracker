@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '../../../components/Header';
 import Button from '../../../components/Button';
 import { viewGroup, getGroupMembers } from '../services/groups';
+import { getAllExpenses } from '../../Expenses/services/expenses';
 import { Users, TrendingUp, TrendingDown, DollarSign, Calendar, UserRoundPlus } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import MemberList from '../components/MemberList';
@@ -11,27 +12,14 @@ const Group = () => {
     const [trendingUp, setTrendingUp] = useState(true);
     const [group, setGroup] = useState({});
     const [members, setMembers] = useState([]);
+    const [expenses, setExpenses] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isMembersSubmitting, setIsMembersSubmitting] = useState(false);
+    const [isExpensesSubmitting, setIsExpensesSubmitting] = useState(false);
 
     const params = useParams();
     const id = params.id;
-    const [transactions, setTransactions] = useState([]);
-
-    const dummyExpenses = [
-        {
-            name: "Groceries",
-            amount: 100,
-            date: "2025-06-11",
-            category: "Food",
-            group_id: id,
-            user_id: 1,
-            paid_by: 1,
-            description: "Groceries for the week",
-            is_settled: false,
-            split: 2
-        }
-    ]
+    
 
     useEffect(() => {
         const fetchGroup = async () => {
@@ -61,6 +49,21 @@ const Group = () => {
             }
         };
         fetchMembers();
+    }, []);
+
+    useEffect(() => {
+        const fetchExpenses = async () => {
+            try {
+                setIsExpensesSubmitting(true);
+                const response = await getAllExpenses(id);
+                setExpenses(response);
+            } catch (error) {
+                console.error('Error fetching expenses:', error);
+            } finally {
+                setIsExpensesSubmitting(false);
+            }
+        };
+        fetchExpenses();
     }, []);
 
     return (
@@ -145,37 +148,60 @@ const Group = () => {
 
                 {/* Recent Expenses */}
                 <div className='flex flex-col bg-neutral-100 rounded-xl p-4 border border-zinc-300 gap-2 w-full h-full mb-6'>
-                    <h1 className='text-lg font-semibold text-zinc-800 font-display'>Recent Expenses</h1>
+                    <div className='flex flex-row items-center justify-between gap-2 border-b border-zinc-200 pb-2'>
+                        <h1 className='text-lg font-semibold text-zinc-800 font-display'>Recent Expenses</h1>
+                    </div>
+                    
                     <div className='flex flex-col gap-2'>
-                        <div className='flex flex-row items-center justify-between gap-2 border-b border-zinc-200 pb-2'>
-                            <div className='flex flex-row items-center gap-2'>
-                                <div className='rounded-full bg-neutral-500 p-2 w-12 h-12 flex items-center justify-center'>
-                                    <p className='text-white font-semibold text-md'>DW</p>
+                        {isExpensesSubmitting ? (
+                            <div className="flex items-center justify-center py-12 w-full h-full bg-neutral-100">
+                                <div className="flex items-center space-x-3">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
+                                    <p className="text-black">Loading expenses...</p>
                                 </div>
-                                <div className='flex flex-col'>
-                                    <p className='text-zinc-800 text-md font-semibold font-sans1'>Expense Name</p>
-                                    <div className='flex flex-row items-center gap-6'>
-                                        <p className='text-zinc-600 text-sm font-sans1'>Paid By</p>
-
-                                        <div className='flex flex-row items-center gap-1'>
-                                            <Users className="w-3 h-3 text-zinc-600" />
-                                            <p className='text-zinc-600 text-sm font-sans1'>Split 4 Ways</p>
+                            </div>
+                        ) : expenses.length > 0 ? (
+                            expenses.map(expense => (
+                                <div key={expense.id} className='flex flex-row items-center justify-between gap-2 border-b border-zinc-200 pb-2'>
+                                    <div className='flex flex-row items-center gap-2'>
+                                        <div className='rounded-full bg-neutral-500 p-2 w-12 h-12 flex items-center justify-center'>
+                                            <p className='text-white font-semibold text-md'>DW</p>
                                         </div>
+                                        
+                                        <div className='flex flex-col'>
+                                            <p className='text-zinc-800 text-md font-semibold font-sans1'>{expense.name}</p>
 
-                                        <div className='flex flex-row items-center gap-1'>
-                                            <Calendar className="w-3 h-3 text-zinc-600" />
-                                            <p className='text-zinc-600 text-sm font-sans1'>Date</p>
+                                            <div className='flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1'>
+                                                <p className='text-zinc-600 text-sm font-sans1'>Paid by {expense.paid_by}</p>
+
+                                                <div className='flex flex-row items-center gap-1'>
+                                                    <Users className="w-3 h-3 text-zinc-600" />
+                                                    <p className='text-zinc-600 text-sm font-sans1'> Split {expense.split_count} ways</p>
+                                                </div>
+
+                                                <div className='flex flex-row items-center gap-1'>
+                                                    <Calendar className="w-3 h-3 text-zinc-600" />
+                                                    <p className='text-zinc-600 text-sm font-sans1'>{new Date(expense.date).toLocaleDateString(undefined, {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                            })}</p>
+                                                </div>
+
                                         </div>
-
                                     </div>
                                 </div>
-                            </div>
                             
                             <div className='flex flex-col items-end gap-1'>
-                                <p className='text-zinc-800 text-lg font-display font-semibold'>$100</p>
-                                <p className='text-zinc-600 text-sm font-sans1'>$25 per person</p>
+                                <p className='text-zinc-800 text-lg font-display font-semibold'>${expense.amount}</p>
+                                <p className='text-zinc-600 text-sm font-sans1'>{expense.amount_per_person} per person</p>
                             </div>
                         </div>
+                            ))
+                        ) : (
+                            <p className='text-zinc-600 text-sm font-sans1'>No expenses found.</p>
+                        )}
+                    
                     </div>
                 </div> 
 
@@ -195,7 +221,7 @@ const Group = () => {
                             {isMembersSubmitting ? (
                                 <div className="flex items-center justify-center py-12 w-full h-full bg-neutral-100">
                                     <div className="flex items-center space-x-3">
-                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
                                         <p className="text-black">Loading members...</p>
                                     </div>
                                 </div>

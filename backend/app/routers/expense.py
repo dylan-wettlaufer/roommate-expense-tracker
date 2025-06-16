@@ -94,6 +94,7 @@ async def get_all_expenses(group_id: UUID, db: AsyncSession = Depends(get_db_ses
     This endpoint allows the authenticated user to retrieve all expenses for a specific group.
     """
     try:
+        # get the group
         group_stmt = select(Group).options(selectinload(Group.members)).where(Group.id == group_id)
         group_result = await db.execute(group_stmt)
         group = group_result.scalar_one_or_none()
@@ -101,8 +102,9 @@ async def get_all_expenses(group_id: UUID, db: AsyncSession = Depends(get_db_ses
         if not group:
             return []
 
-        split_count = len(group.members) if group.members else 1
+        split_count = len(group.members) if group.members else 1 # if the group has no members, the split count is 1
 
+        # get all expenses for the group
         expense_stmt = select(Expense).where(Expense.group_id == group_id)
         expense_result = await db.execute(expense_stmt)
         expenses = expense_result.scalars().all()
@@ -110,12 +112,14 @@ async def get_all_expenses(group_id: UUID, db: AsyncSession = Depends(get_db_ses
         response_data = []
 
         for expense in expenses:
-            amount_per_person = expense.amount / split_count
+            amount_per_person = expense.amount / split_count # calculate the amount per person
 
+            # get the user who paid the expense
             paid_by = await db.execute(select(User).where(User.id == expense.user_id))
             paid_by = paid_by.scalar_one_or_none()
             
-            response_data.append(ExpenseResponse(
+            response_data.append(ExpenseResponse( # append the expense to the response data
+                id=expense.id,
                 name=expense.name,
                 paid_by=paid_by.first_name + " " + paid_by.last_name,
                 split_count=split_count,

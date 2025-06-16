@@ -1,9 +1,11 @@
 import React from 'react';
 import { useState } from 'react';
 import { createGroup } from '../services/groups';
+import { useNavigate } from 'react-router-dom';
 
 const CreateGroup = (props) => {
 
+    const navigate = useNavigate();
     const [members, setMembers] = useState([{ email: '', name: '' }]);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -38,6 +40,7 @@ const CreateGroup = (props) => {
                 setMembers([{ email: '', name: '' }]);
                 props.onGroupCreated(response);
                 props.handleCreateGroup();
+                navigate(`/group/${response.id}`);
 
             } catch (error) {
                 console.error(error)
@@ -136,7 +139,7 @@ const CreateGroup = (props) => {
                         <button
                         type="submit"
                         disabled={isCreating}
-                        className="px-6 py-2 rounded-md bg-cyan-600 hover:bg-cyan-700 text-white font-medium"
+                        className="px-6 py-2 w-48 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
                         >
                         {isCreating ? (
                             <>

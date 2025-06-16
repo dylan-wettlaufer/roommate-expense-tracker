@@ -54,6 +54,7 @@ class ExpenseShare(BaseModel):
         orm_mode = True
 
 class ExpenseResponse(BaseModel):
+    id: UUID = Field(...)
     name: str = Field(..., min_length=3, max_length=50)
     paid_by: str = Field(..., min_length=3, max_length=50)
     split_count: int = Field(...)

@@ -91,7 +91,7 @@ const DisplayGroups = () => {
             {isSubmitting ? (
               <div className="flex items-center justify-center py-12">
                 <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
                   <p className="text-black">Loading groups...</p>
                 </div>
               </div>
