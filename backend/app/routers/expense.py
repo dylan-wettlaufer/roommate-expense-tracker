@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from app.schemas.expense import ExpenseCreate, ExpenseUpdate, ExpenseResponse, ExpenseShare, Expense
+from app.schemas.expense import ExpenseCreate, ExpenseUpdate, ExpenseResponse, ExpenseShare, Expense as ExpenseSchema
 from app.utils.dependencies import get_current_user
-from app.db.models import User
+from app.db.models import User, Expense, Group
 from fastapi import HTTPException, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db_session
@@ -11,13 +11,14 @@ from app.schemas.expense import ExpenseSharesCreate
 from app.db.models import ExpenseShares
 from app.utils.dependencies import get_current_user
 from app.db.models import User
-from sqlalchemy import func
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 
 
 router = APIRouter()
 
-@router.post("/expenses/create/{group_id}", response_model=Expense, status_code=status.HTTP_201_CREATED)
+@router.post("/expenses/create/{group_id}", response_model=ExpenseSchema, status_code=status.HTTP_201_CREATED)
 async def create_expense(expense: ExpenseCreate, group_id: UUID, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
     """
     Create a new expense.
@@ -68,3 +69,67 @@ async def create_expense(expense: ExpenseCreate, group_id: UUID, db: AsyncSessio
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+
+
+@router.get("/get/expense/{expense_id}", response_model=ExpenseSchema, status_code=status.HTTP_200_OK)
+async def get_expense(expense_id: UUID, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
+    """
+    Retrieve a specific expense by its ID.
+    This endpoint allows the authenticated user to retrieve a specific expense by its ID.
+    """
+    try:
+        result = await db.execute(select(Expense).where(Expense.id == expense_id))
+        expense = result.scalar_one_or_none()
+        return expense
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+@router.get("/get/expense/all/{group_id}", response_model=list[ExpenseResponse], status_code=status.HTTP_200_OK)
+async def get_all_expenses(group_id: UUID, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
+    """
+    Retrieve all expenses for a specific group.
+    This endpoint allows the authenticated user to retrieve all expenses for a specific group.
+    """
+    try:
+        group_stmt = select(Group).options(selectinload(Group.members)).where(Group.id == group_id)
+        group_result = await db.execute(group_stmt)
+        group = group_result.scalar_one_or_none()
+
+        if not group:
+            return []
+
+        split_count = len(group.members) if group.members else 1
+
+        expense_stmt = select(Expense).where(Expense.group_id == group_id)
+        expense_result = await db.execute(expense_stmt)
+        expenses = expense_result.scalars().all()
+
+        response_data = []
+
+        for expense in expenses:
+            amount_per_person = expense.amount / split_count
+
+            paid_by = await db.execute(select(User).where(User.id == expense.user_id))
+            paid_by = paid_by.scalar_one_or_none()
+            
+            response_data.append(ExpenseResponse(
+                name=expense.name,
+                paid_by=paid_by.first_name + " " + paid_by.last_name,
+                split_count=split_count,
+                date=expense.created_at,
+                amount=expense.amount,
+                expense_type=expense.expense_type,
+                split_method=expense.split_method,
+                amount_per_person=amount_per_person
+            ))
+        
+        return response_data
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+

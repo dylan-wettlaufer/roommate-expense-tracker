@@ -54,8 +54,15 @@ class ExpenseShare(BaseModel):
         orm_mode = True
 
 class ExpenseResponse(BaseModel):
-    expense: Expense
-    shares: list[ExpenseShare]
+    name: str = Field(..., min_length=3, max_length=50)
+    paid_by: str = Field(..., min_length=3, max_length=50)
+    split_count: int = Field(...)
+    date: datetime = Field(...)
+    amount: float = Field(..., gt=0)
+    expense_type: str = Field(..., min_length=3, max_length=50)
+    split_method: str = Field(..., min_length=3, max_length=50)
+    amount_per_person: float = Field(..., gt=0)
+    
 
 
 class ExpenseSharesCreate(BaseModel):
