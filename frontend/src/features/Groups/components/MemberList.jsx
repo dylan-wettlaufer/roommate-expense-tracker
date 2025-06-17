@@ -4,26 +4,6 @@ import { useParams } from 'react-router-dom';
 import { getGroupMembers } from '../services/groups';
 
 const MemberList = (props) => {
-    const [members, setMembers] = useState([]);
-    const [isMembersSubmitting, setIsMembersSubmitting] = useState(false);
-
-    const params = useParams();
-    const id = params.id;
-
-    useEffect(() => {
-        const fetchMembers = async () => {
-            try {
-                setIsMembersSubmitting(true);
-                const response = await getGroupMembers(id);
-                setMembers(response);
-            } catch (error) {
-                console.error('Error fetching members:', error);
-            } finally {
-                setIsMembersSubmitting(false);
-            }
-        };
-        fetchMembers();
-    }, []);
 
     return (
         <div className='flex flex-row items-center gap-2 border-b border-zinc-200 pb-2'>

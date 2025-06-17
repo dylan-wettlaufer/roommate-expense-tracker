@@ -6,6 +6,7 @@ import { getAllExpenses } from '../../Expenses/services/expenses';
 import { Users, TrendingUp, TrendingDown, DollarSign, Calendar, UserRoundPlus } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import MemberList from '../components/MemberList';
+import CreateExpense from '../../Expenses/components/CreateExpense';
 
 const Group = () => {
 
@@ -16,10 +17,18 @@ const Group = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isMembersSubmitting, setIsMembersSubmitting] = useState(false);
     const [isExpensesSubmitting, setIsExpensesSubmitting] = useState(false);
+    const [showCreateExpense, setShowCreateExpense] = useState(false);
 
     const params = useParams();
     const id = params.id;
     
+    const handleShowCreateExpense = () => {
+        setShowCreateExpense(prev => !prev);
+    };
+
+    const handleExpenseCreated = (newExpense) => {
+        setExpenses(prev => [...prev, newExpense]);
+    };
 
     useEffect(() => {
         const fetchGroup = async () => {
@@ -134,17 +143,22 @@ const Group = () => {
 
                 {/* Buttons */}
                 <div className='mb-4 flex flex-col sm:flex-row justify-between gap-4 sm:gap-6 bg-neutral-100 rounded-xl p-4 border border-zinc-300'>
-                    <button className='w-full h-12 bg-emerald-600 hover:bg-emerald-700 border border-zinc-800 rounded-xl text-white font-medium py-2 px-4'>
+                    <button 
+                        onClick={handleShowCreateExpense}
+                        className='w-full h-12 bg-emerald-600 hover:bg-emerald-700 border border-zinc-800 rounded-xl text-white font-medium py-2 px-4'>
                         + Add Expense
                     </button>
                     <button className='w-full h-12 bg-neutral-500 hover:bg-neutral-600 border border-zinc-800 rounded-xl text-white font-medium py-2 px-4'>
                         $ Settle Up
                     </button>
-                    <button className='w-full h-12 bg-white hover:bg-gray-200 border border-zinc-400 rounded-xl text-zinc-800 font-medium py-2 px-4'>
+                    <button 
+                        className='w-full h-12 bg-white hover:bg-gray-200 border border-zinc-400 rounded-xl text-zinc-800 font-medium py-2 px-4'>
                         Expense History
                     </button>
                 </div>
 
+                {/* modals */}
+                {showCreateExpense && <CreateExpense handleShowCreateExpense={handleShowCreateExpense} onExpenseCreated={handleExpenseCreated} group_id={id}/>}
 
                 {/* Recent Expenses */}
                 <div className='flex flex-col bg-neutral-100 rounded-xl p-4 border border-zinc-300 gap-2 w-full h-full mb-6'>
