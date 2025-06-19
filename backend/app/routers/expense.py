@@ -25,13 +25,14 @@ async def create_expense(expense: ExpenseCreate, group_id: UUID, db: AsyncSessio
     This endpoint allows the authenticated user to create a new expense.
     """
     try:
-        new_expense = await create_expense_in_db(db, expense, current_user, group_id) # Call the create_expense_in_db function from crud.py
         participants = expense.participants
         splits = expense.splits
 
         if not participants: # ensures there are participants
             raise HTTPException(status_code=400, detail="No participants provided.")
 
+        new_expense = await create_expense_in_db(db, expense, current_user, group_id) # Call the create_expense_in_db function from crud.py
+        
         shares_to_create = [] # the number of share that swill be ceated
 
 

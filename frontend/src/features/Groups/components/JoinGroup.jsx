@@ -24,7 +24,8 @@ const JoinGroup = (props) => {
             props.onGroupJoined(response); // add the group to the groups list
             props.handleShowJoinGroup(); // close the join group modal
           } catch (error) {
-            setErrors(prev => ({ ...prev, invite_code: 'Group code is invalid' }));
+            const message = error.response?.data?.detail || "An error occurred.";
+            setErrors(prev => ({ ...prev, invite_code: message }));
           } finally {
             setIsJoining(false); // stop loading
           }

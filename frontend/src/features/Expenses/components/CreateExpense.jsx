@@ -17,6 +17,9 @@ const CreateExpense = (props) => {
     const [selectedUserId, setSelectedUserId] = useState('');
     const navigate = useNavigate();
 
+    console.log("members: ", props.members);
+    const users = props.members ?? [];
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -25,10 +28,7 @@ const CreateExpense = (props) => {
             const response = await createExpense({ name, amount, expense_type, split_method, participants }, props.group_id);
             props.handleShowCreateExpense();
             props.onExpenseCreated(response);
-        } catch (error) {
-            console.error('Error creating expense:', error);
-            setErrors(error.response.data.errors)
-        } finally {            
+
             setName('');
             setAmount('');
             setExpenseType('');
@@ -36,6 +36,11 @@ const CreateExpense = (props) => {
             setParticipants([]);
             setErrors({});
             setSelectedUserId('');
+
+        } catch (error) {
+            const message = error.response?.data?.detail || "An error occurred.";
+            setErrors(prev => ({ ...prev, participants: message }))
+        } finally {            
             setIsCreating(false);
         }
     };
@@ -49,7 +54,8 @@ const CreateExpense = (props) => {
                 const response = await getGroupMembers(props.group_id);
                 setGroupUsers(response);
             } catch (error) {
-                console.error('Error fetching members:', error);
+                const message = error.response?.data?.detail || "An error occurred.";
+                setErrors(prev => ({ ...prev, participants: message }))
             } finally {
                 setIsMembersSubmitting(false);
             }
@@ -73,7 +79,7 @@ const CreateExpense = (props) => {
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
             <div className='bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl'>
                 <h2 className="text-2xl font-bold text-neutral-800 mb-6">Create New Expense</h2>
-                <form onSubmit={handleSubmit}>
+                <form className="space-y-6" onSubmit={handleSubmit}>
 
                     <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-1">Expense Name *</label>
@@ -125,6 +131,7 @@ const CreateExpense = (props) => {
                             className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                             placeholder='Select Split Method'
                             >
+                            <option value="">Select Split Method</option>
                             <option value="equal">Equal</option>
                             <option value="unequal">Unequal</option>
                         </select>
@@ -140,7 +147,7 @@ const CreateExpense = (props) => {
                             placeholder='Select a User'
                         >
                             <option value="">Select a User</option>
-                            {groupUsers.map((user) => (
+                            {users.map((user) => (
                                 <option key={user.id} value={user.id}>
                                    {user.first_name} {user.last_name}
                                 </option>
@@ -157,7 +164,7 @@ const CreateExpense = (props) => {
 
                         <ul className='list-inside list-decimal mt-4'>
                             {participants.map((id) => {
-                                const user = groupUsers.find((u) => String(u.id) === String(id));
+                                const user = users.find((u) => String(u.id) === String(id));
                                 return (
                                     <li key={id}>
                                         {user ? `${user.first_name} ${user.last_name}` : 'Unknown User'}

@@ -42,8 +42,8 @@ const Group = () => {
                 setIsSubmitting(false);
             }
         };
-        fetchGroup();
-    }, []);
+        if (id) fetchGroup();
+    }, [id]);
 
     useEffect(() => {
         const fetchMembers = async () => {
@@ -57,8 +57,8 @@ const Group = () => {
                 setIsMembersSubmitting(false);
             }
         };
-        fetchMembers();
-    }, []);
+        if (id) fetchMembers();
+    }, [id]);
 
     useEffect(() => {
         const fetchExpenses = async () => {
@@ -72,8 +72,8 @@ const Group = () => {
                 setIsExpensesSubmitting(false);
             }
         };
-        fetchExpenses();
-    }, []);
+        if (id) fetchExpenses();
+    }, [id]);
 
     return (
         <div className='bg-gray-100 h-screen w-screen'>
@@ -158,7 +158,7 @@ const Group = () => {
                 </div>
 
                 {/* modals */}
-                {showCreateExpense && <CreateExpense handleShowCreateExpense={handleShowCreateExpense} onExpenseCreated={handleExpenseCreated} group_id={id}/>}
+                {showCreateExpense && <CreateExpense members={members} handleShowCreateExpense={handleShowCreateExpense} onExpenseCreated={handleExpenseCreated} group_id={id}/>}
 
                 {/* Recent Expenses */}
                 <div className='flex flex-col bg-neutral-100 rounded-xl p-4 border border-zinc-300 gap-2 w-full h-full mb-6'>
