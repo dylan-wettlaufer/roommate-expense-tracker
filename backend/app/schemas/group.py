@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from uuid import UUID, uuid4
 from datetime import datetime, timezone
 from typing import Optional
-
+from app.schemas.expense import Expense
 # --- Group ---
 
 class GroupBase(BaseModel):
@@ -34,10 +34,13 @@ class GroupOut(BaseModel):
     id: UUID = Field(...)
     name: str = Field(...)
     description: Optional[str] = Field(None)
-    member_count: int = Field(...)
+    member_count: int = Field(...) # Number of members in the group
+    expenses: list[Expense] = Field(...) # List of expenses in the group
+    grand_total: float = Field(...) # Grand total of all expenses in the group
 
-    class Config:
-        orm_mode = True
+    
+    model_config = ConfigDict(from_attributes=True)
+
     
 
 class GroupDelete(BaseModel):

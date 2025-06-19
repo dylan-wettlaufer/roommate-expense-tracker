@@ -102,7 +102,7 @@ const Group = () => {
                             </div>
                             <div>
                                 <p className='text-zinc-600 text-sm font-sans1'>Total Expenses</p>
-                                <p className='text-zinc-800 font-semibold text-md font-display'>$0</p>
+                                <p className='text-zinc-800 font-semibold text-md font-display'>${group.grand_total}</p>
                             </div>
                         </div>
 

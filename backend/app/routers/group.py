@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.crud.group import create_group_in_db, get_group_by_id, update_group_in_db, get_group_members_in_db
 from app.schemas.group import GroupCreate, GroupUpdate, Group, InviteCode, GroupOut
+from app.schemas.expense import Expense as ExpenseSchema
 from app.utils.dependencies import get_current_user
 from app.db.models import User
 from fastapi import HTTPException, Depends, Path, status
@@ -9,6 +10,9 @@ from app.db.database import get_db_session
 from uuid import UUID
 from app.crud.group import add_member_to_group_in_db, get_all_groups_in_db
 from app.schemas.group import GroupMember
+from app.db.models import Expense, GroupMember as GroupMemberModel, Group as GroupModel
+from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 
 router = APIRouter()
 
@@ -45,15 +49,35 @@ async def update_group(group_id: UUID, group: GroupUpdate, db: AsyncSession = De
         )
 
 
-@router.get("/groups/single/{group_id}", response_model=Group)
+@router.get("/groups/single/{group_id}", response_model=GroupOut)
 async def get_group(group_id: UUID, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
     """
     Retrieve a group by its ID.
     This endpoint allows the authenticated user to retrieve a group by its ID.
     """
     try:
-        group = await get_group_by_id(db, group_id) # Call the get_group_by_id function from crud.py
-        return group
+        group = await db.get(GroupModel, group_id)
+    
+        result = await db.execute(
+            select(Expense).where(Expense.group_id == group.id)
+        )
+        expenses = result.scalars().all()
+
+        member_count_result = await db.execute(
+            select(func.count(GroupMemberModel.user_id)).where(GroupMemberModel.group_id == group.id)
+        )
+        member_count = member_count_result.scalar()
+
+        grand_total = sum(exp.amount for exp in expenses)
+
+        return GroupOut(
+            id=group.id,
+            name=group.name,
+            description=group.description,
+            member_count=member_count,
+            expenses=[ExpenseSchema.model_validate(exp) for exp in expenses],
+            grand_total=grand_total,
+        )
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

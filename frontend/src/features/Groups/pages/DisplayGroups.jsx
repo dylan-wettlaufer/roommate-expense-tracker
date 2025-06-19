@@ -114,7 +114,7 @@ const DisplayGroups = () => {
                     
                     <p className="text-zinc-600 text-sm leading-relaxed break-words">{group.description}</p>
                     <div className="mt-4 flex justify-between">
-                      <p className="text-zinc-600 text-sm">Total Expenses:</p>
+                      <p className="text-zinc-600 text-sm">Total Expenses: <span className="font-semibold">${group.grand_total}</span></p>
                       <Link to={`/group/${group.id}`}>
                         <button className="text-black hover:text-black text-sm font-medium transition-colors">
                           View →

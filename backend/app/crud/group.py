@@ -1,16 +1,19 @@
 from app.db.database import get_db_session
 from app.db.models import Group
 from app.schemas.group import GroupCreate, GroupUpdate, InviteCode, GroupOut
+from app.schemas.expense import Expense
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from fastapi import HTTPException
 from app.utils.dependencies import get_current_user
 from app.db.models import User, GroupMember
 import secrets
-from sqlalchemy import select
+from sqlalchemy import select, func
 import string
 from uuid import UUID
-from sqlalchemy import func
+from app.db.models import Expense
+from app.schemas.expense import Expense as ExpenseSchema
+from sqlalchemy.orm import selectinload
 
 def generate_invite_code():
     """Generate a unique 8-character invite code"""
@@ -71,9 +74,11 @@ async def get_group_by_id(db: AsyncSession, group_id: UUID) -> Optional[Group]:
     """
     try:
         group = await db.execute(
-            select(Group).filter(Group.id == group_id)
+            select(Group)
+            .where(Group.id == group_id)
         )
         return group.scalar_one_or_none()
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
@@ -207,11 +212,23 @@ async def get_all_groups_in_db(db: AsyncSession, current_user: User) -> list[Gro
                 select(func.count(GroupMember.user_id)).where(GroupMember.group_id == group.id)
             )
             member_count = member_count_result.scalar() # get the number of members in the group
+
+            expenses = await db.execute(
+                select(Expense).filter(Expense.group_id == group.id)
+            )
+            expenses = expenses.scalars().all()
+            grand_total = 0
+
+            for expense in expenses:
+                grand_total += expense.amount
+            
             group_outputs.append(GroupOut( # append the group to the list
                 id=group.id,
                 name=group.name,
                 description=group.description,
-                member_count=member_count
+                member_count=member_count,
+                expenses=expenses,
+                grand_total=grand_total
             ))
 
         return group_outputs
