@@ -36,6 +36,14 @@ const Group = () => {
                 setIsSubmitting(true);
                 const response = await viewGroup(id);
                 setGroup(response);
+                setTrendingUp(response.balance >= 0);
+                // if number is negative remove minus sign
+                if (response.balance < 0) {
+                    setGroup({
+                        ...response,
+                        balance: response.balance * -1
+                    });
+                }
             } catch (error) {
                 console.error('Error fetching group:', error);
             } finally {
@@ -119,12 +127,12 @@ const Group = () => {
                             {trendingUp ? (
                                 <div>
                                     <p className='text-zinc-600 text-sm font-sans1'>Your Balance</p>
-                                    <p className='text-green-600 font-semibold text-md font-display'>+$0</p>
+                                    <p className='text-green-600 font-semibold text-md font-display'>+${group.balance}</p>
                                 </div>
                             ) : (
                                 <div>
                                     <p className='text-zinc-600 text-sm font-sans1'>Your Balance</p>
-                                    <p className='text-red-600 font-semibold text-md font-display'>-$0</p>
+                                    <p className='text-red-600 font-semibold text-md font-display'>-${group.balance}</p>
                                 </div>
                             )}
                         </div>

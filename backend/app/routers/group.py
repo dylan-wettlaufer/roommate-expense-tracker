@@ -13,6 +13,7 @@ from app.schemas.group import GroupMember
 from app.db.models import Expense, GroupMember as GroupMemberModel, Group as GroupModel
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
+from app.routers.expense import calculate_user_balance
 
 router = APIRouter()
 
@@ -70,6 +71,8 @@ async def get_group(group_id: UUID, db: AsyncSession = Depends(get_db_session), 
 
         grand_total = sum(exp.amount for exp in expenses)
 
+        balance = await calculate_user_balance(db, group_id, current_user.id)
+
         return GroupOut(
             id=group.id,
             name=group.name,
@@ -77,6 +80,7 @@ async def get_group(group_id: UUID, db: AsyncSession = Depends(get_db_session), 
             member_count=member_count,
             expenses=[ExpenseSchema.model_validate(exp) for exp in expenses],
             grand_total=grand_total,
+            balance=balance
         )
     except ValueError as e:
         raise HTTPException(

@@ -14,6 +14,7 @@ from uuid import UUID
 from app.db.models import Expense
 from app.schemas.expense import Expense as ExpenseSchema
 from sqlalchemy.orm import selectinload
+from app.routers.expense import calculate_user_balance
 
 def generate_invite_code():
     """Generate a unique 8-character invite code"""
@@ -221,6 +222,8 @@ async def get_all_groups_in_db(db: AsyncSession, current_user: User) -> list[Gro
 
             for expense in expenses:
                 grand_total += expense.amount
+
+            balance = await calculate_user_balance(db, group.id, current_user.id)
             
             group_outputs.append(GroupOut( # append the group to the list
                 id=group.id,
@@ -228,7 +231,8 @@ async def get_all_groups_in_db(db: AsyncSession, current_user: User) -> list[Gro
                 description=group.description,
                 member_count=member_count,
                 expenses=expenses,
-                grand_total=grand_total
+                grand_total=grand_total,
+                balance=balance
             ))
 
         return group_outputs
@@ -237,5 +241,5 @@ async def get_all_groups_in_db(db: AsyncSession, current_user: User) -> list[Gro
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        db.close()
+        await db.close()
     

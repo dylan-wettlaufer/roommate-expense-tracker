@@ -11,7 +11,7 @@ from app.schemas.expense import ExpenseSharesCreate
 from app.db.models import ExpenseShares
 from app.utils.dependencies import get_current_user
 from app.db.models import User
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
 
@@ -39,7 +39,11 @@ async def create_expense(expense: ExpenseCreate, group_id: UUID, db: AsyncSessio
         if expense.split_method == "equal":
             amount_per_person = round(new_expense.amount / len(participants), 2)
             for user_id in participants:
-                share = await create_expense_share_in_db(db, ExpenseSharesCreate(amount_owed=amount_per_person, amount_paid=0, settled=False), user_id, new_expense.id)
+                # if the current user id is equal to the user_id
+                if user_id == current_user.id:
+                    share = await create_expense_share_in_db(db, ExpenseSharesCreate(amount_owed=amount_per_person, amount_paid=new_expense.amount, settled=True), user_id, new_expense.id)
+                else:
+                    share = await create_expense_share_in_db(db, ExpenseSharesCreate(amount_owed=amount_per_person, amount_paid=0, settled=False), user_id, new_expense.id)
                 shares_to_create.append(share)
 
         elif expense.split_method == "percent":
@@ -138,3 +142,18 @@ async def get_all_expenses(group_id: UUID, db: AsyncSession = Depends(get_db_ses
             detail=str(e)
         )
 
+async def calculate_user_balance(db: AsyncSession, group_id: UUID, user_id: UUID) -> float:
+    stmt = (
+        select(
+            func.coalesce(func.sum(ExpenseShares.amount_paid), 0),
+            func.coalesce(func.sum(ExpenseShares.amount_owed), 0),
+        )
+        .join(ExpenseShares.expense)
+        .where(ExpenseShares.user_id == user_id)
+        .where(Expense.group_id == group_id)
+    )
+    result = await db.execute(stmt)
+    total_paid, total_owed = result.one()
+
+    balance = round(total_paid - total_owed, 2)
+    return balance

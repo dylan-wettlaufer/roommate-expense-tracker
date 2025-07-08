@@ -37,9 +37,10 @@ class GroupOut(BaseModel):
     member_count: int = Field(...) # Number of members in the group
     expenses: list[Expense] = Field(...) # List of expenses in the group
     grand_total: float = Field(...) # Grand total of all expenses in the group
-
+    balance: float = Field(...) # Balance of the group
     
     model_config = ConfigDict(from_attributes=True)
+
 
     
 
