@@ -18,7 +18,7 @@ from sqlalchemy.orm import selectinload
 
 router = APIRouter()
 
-@router.post("/expenses/create/{group_id}", response_model=ExpenseSchema, status_code=status.HTTP_201_CREATED)
+@router.post("/expenses/create/{group_id}", response_model=ExpenseResponse, status_code=status.HTTP_201_CREATED)
 async def create_expense(expense: ExpenseCreate, group_id: UUID, db: AsyncSession = Depends(get_db_session), current_user: User = Depends(get_current_user)):
     """
     Create a new expense.
@@ -66,8 +66,20 @@ async def create_expense(expense: ExpenseCreate, group_id: UUID, db: AsyncSessio
         else:
             raise HTTPException(status_code=400, detail="Unsupported split method.")
 
-        
-        return new_expense  
+        paid_by = await db.execute(select(User).where(User.id == new_expense.user_id))
+        paid_by = paid_by.scalar_one_or_none()
+
+        return ExpenseResponse(
+            id=new_expense.id,
+            name=new_expense.name,
+            paid_by=paid_by.first_name + " " + paid_by.last_name,
+            split_count=len(participants),
+            date=new_expense.created_at,
+            amount=new_expense.amount,
+            expense_type=new_expense.expense_type,
+            split_method=new_expense.split_method,
+            amount_per_person=amount_per_person
+        ) 
 
     except ValueError as e: 
         raise HTTPException(

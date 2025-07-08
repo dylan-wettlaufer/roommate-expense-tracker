@@ -163,6 +163,10 @@ const Group = () => {
                         className='w-full h-12 bg-white hover:bg-gray-200 border border-zinc-400 rounded-xl text-zinc-800 font-medium py-2 px-4'>
                         Expense History
                     </button>
+                    <button 
+                        className='w-full h-12 bg-white hover:bg-gray-200 border border-zinc-400 rounded-xl text-zinc-800 font-medium py-2 px-4'>
+                        Settle History
+                    </button>
                 </div>
 
                 {/* modals */}
@@ -171,7 +175,7 @@ const Group = () => {
                 {/* Recent Expenses */}
                 <div className='flex flex-col bg-neutral-100 rounded-xl p-4 border border-zinc-300 gap-2 w-full h-full mb-6'>
                     <div className='flex flex-row items-center justify-between gap-2 border-b border-zinc-200 pb-2'>
-                        <h1 className='text-lg font-semibold text-zinc-800 font-display'>Recent Expenses</h1>
+                        <h1 className='text-lg font-semibold text-zinc-800 font-display'>Pending Expenses</h1>
                     </div>
                     
                     <div className='flex flex-col gap-2'>
